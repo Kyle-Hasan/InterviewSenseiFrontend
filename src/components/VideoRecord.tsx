@@ -2,13 +2,21 @@
 import React, { useRef, useState } from 'react';
 import { Button } from './ui/button';
 
-export default function VideoRecord() {
+
+interface VideoRecordProps {
+  setBlob: (blob:Blob)=> void,
+  recording: boolean
+  setRecording: (recording:boolean) => void
+}
+export default function VideoRecord({recording,setRecording,setBlob}:VideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [recording, setRecording] = useState(false);
+  
   const [hasVideo,setHasVideo] = useState(false)
   const downloadRef = useRef<HTMLAnchorElement>(null);
   const mediaRecorder =  useRef<MediaRecorder | null>(null)
   const mediaStream = useRef<MediaStream | null>(null)
+  
+
 
 
   async function handleStream(stream:MediaStream) {
@@ -21,11 +29,13 @@ export default function VideoRecord() {
         mediaRecorder.current.start()
   
         const stopped = new Promise((resolve, reject) => {
-            
+            if(mediaRecorder.current) {
             mediaRecorder.current.onstop = resolve;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             mediaRecorder.current.onerror = (event:any) => reject(event.name);
+            }
           });
+          
         
           
           await stopped;
@@ -57,11 +67,13 @@ export default function VideoRecord() {
       }
 
       const recordedChunks = await handleStream(mediaStream.current);
-      debugger
+      
 
       if (videoRef.current && downloadRef.current && recordedChunks) {
-        debugger;
-        const url = URL.createObjectURL(convertDataToBlob(recordedChunks));
+        const recordedBlob = convertDataToBlob(recordedChunks)
+        
+        const url = URL.createObjectURL(recordedBlob);
+        setBlob(recordedBlob)
         
         videoRef.current.src = url;
         videoRef.current.srcObject = null;
@@ -84,6 +96,8 @@ export default function VideoRecord() {
     setRecording(false);
   };
 
+  
+
   return (
     <div className='space-y-4 flex flex-col items-center justify-center'>
       
@@ -99,6 +113,7 @@ export default function VideoRecord() {
         }
       <br />
       <a ref={downloadRef} className="text-blue-500 mt-4 block"></a>
+    
     </div>
   );
 }
