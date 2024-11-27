@@ -1,25 +1,46 @@
 'use client'
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 
 
 interface VideoRecordProps {
   setBlob: (blob:Blob)=> void,
   recording: boolean
-  setRecording: (recording:boolean) => void
+  setRecording: (recording:boolean) => void,
+  sendForReview: ()=> void,
+  responseLoading: boolean
+  
 }
-export default function VideoRecord({recording,setRecording,setBlob}:VideoRecordProps) {
+export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading}:VideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const [hasVideo,setHasVideo] = useState(false)
-  const downloadRef = useRef<HTMLAnchorElement>(null);
+  
   const mediaRecorder =  useRef<MediaRecorder | null>(null)
   const mediaStream = useRef<MediaStream | null>(null)
-  
+  const [firstRecording,setFirstRecording] = useState(false)
+  const TIMEOUT = 10*1000 // 2 minutes
+  const [timeRemaining,setTimeRemaining] = useState(TIMEOUT/1000)
+  const [minutes,setMinutes] = useState("00")
+  const [seconds,setSeconds] = useState("10")
+ 
+
+  const intervalId = useRef<NodeJS.Timeout | null>(null)
+  const timeoutId = useRef<NodeJS.Timeout | null> (null)
+// clean up interval
+useEffect(()=> {
+
+
+  return ()=> {
+    if(intervalId.current) {
+    clearInterval(intervalId.current)
+    }
+  }
+}, [])
 
 
 
-  async function handleStream(stream:MediaStream) {
+  const handleStream = async(stream:MediaStream)=> {
     mediaRecorder.current = new MediaRecorder(stream as MediaStream)
     if(mediaRecorder.current) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,11 +56,39 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
             mediaRecorder.current.onerror = (event:any) => reject(event.name);
             }
           });
+
+          
+
+          
+          intervalId.current = setInterval(() => {
+            setTimeRemaining((prevTimeRemaining) => {
+              const t = prevTimeRemaining - 1;
+              const minNum = Math.floor(t / 60);
+              const secondsNum = t % 60;
+              setMinutes(minNum.toString().padStart(2, '0'));
+              setSeconds(secondsNum.toString().padStart(2, '0'));
+              return t;
+            });
+          }, 1000);
+      
+          
+
+
+         timeoutId.current = setTimeout(()=> {
+
+            if(mediaRecorder.current && mediaRecorder.current.state === 'recording') {
+              mediaRecorder.current.stop()
+            
+              
+              stopRecording()
+            }
+
+          }, TIMEOUT )
           
         
           
           await stopped;
-          debugger
+         
           return data;
   
       }
@@ -53,6 +102,7 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
 
   const startRecording = async () => {
     
+    
     try {
       setRecording(true);
       setHasVideo(true)
@@ -60,6 +110,7 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
         video: true,
         audio: true,
       });
+      
 
       if (videoRef.current && mediaStream.current) {
         videoRef.current.srcObject = mediaStream.current;
@@ -69,7 +120,7 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
       const recordedChunks = await handleStream(mediaStream.current);
       
 
-      if (videoRef.current && downloadRef.current && recordedChunks) {
+      if (videoRef.current&& recordedChunks) {
         const recordedBlob = convertDataToBlob(recordedChunks)
         
         const url = URL.createObjectURL(recordedBlob);
@@ -79,9 +130,6 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
         videoRef.current.srcObject = null;
         videoRef.current.controls = true;
 
-        downloadRef.current.href = url;
-        downloadRef.current.download = 'RecordedVideo.webm';
-        downloadRef.current.textContent = 'Download Recorded Video';
       }
     } catch (error) {
       console.error('Error during recording:', error);
@@ -93,7 +141,16 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
     if (mediaStream.current) {
       mediaStream.current.getTracks().forEach((track) => track.stop());
     }
+    
+    if(intervalId.current) {
+      clearInterval(intervalId.current)
+    }
+    if(timeoutId.current) {
+      clearTimeout(timeoutId.current)
+    }
+    setTimeRemaining(TIMEOUT/1000)
     setRecording(false);
+    setFirstRecording(true)
   };
 
   
@@ -101,18 +158,34 @@ export default function VideoRecord({recording,setRecording,setBlob}:VideoRecord
   return (
     <div className='space-y-4 flex flex-col items-center justify-center'>
       
-      {recording ? (
-        <Button onClick={stopRecording}>Stop Recording</Button>
-      ) : (
-        <Button onClick={startRecording}>Start Recording</Button>
-      )}
+      
       <h2 className="text-2xl font-bold mb-3">Preview</h2>
       {
         hasVideo ?
       <video className="size-auto" ref={videoRef} autoPlay muted></video> : <p className='text'>Press start recording to show video</p>
         }
       <br />
-      <a ref={downloadRef} className="text-blue-500 mt-4 block"></a>
+
+
+
+      {recording ? (
+        <>
+        <div className='mb-2'> Time remaining: {minutes}:{seconds}</div>
+        <div className='flex flex-row space-x-4'>
+        
+        <Button onClick={stopRecording}>Stop Recording</Button>
+        </div>
+        </>
+      ) : (
+        <div className='flex flex-row space-x-4'>
+          {firstRecording && <Button  onClick={sendForReview} disabled={responseLoading}>Send for review</Button>}
+        <Button onClick={startRecording} disabled={responseLoading}>Start Recording</Button>
+        </div>
+      )
+      
+      
+      }
+
     
     </div>
   );
