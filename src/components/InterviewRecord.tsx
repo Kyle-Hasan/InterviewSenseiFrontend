@@ -1,20 +1,39 @@
 'use client'
 import VideoRecord from '@/components/VideoRecord'
-import React, { useState } from 'react'
-import { ratingResponse } from '../types/ratingResponse'
+import React, { useEffect, useState } from 'react'
+import { ratingResponse } from '../app/types/ratingResponse'
 
-import axiosInstance from '../utils/axiosInstance'
+import axiosInstance from '../app/utils/axiosInstance'
+import Spinner from '@/components/Spinner'
+import { question } from '@/app/types/interview'
 
-export default function InterviewRecord() {
+interface InterviewRecordProps {
+  question:question
+}
+
+export default function InterviewRecord({question}:InterviewRecordProps) {
 
   const [blob,setBlob] = useState<Blob>()
   const [reviewGood,setReviewGood] = useState<string[]>([])
   const [reviewBad,setReviewBad] = useState<string[]>([])
   const [recording,setRecording] = useState(false)
-  const [question,setQuestion] = useState("How do you prioritize tasks when working on multiple projects with tight deadlines?")
   const [loadingResponse,setLoadingResponse] = useState(false)
 
+  useEffect((
+    ()=> {
+      setBlob(undefined)
+      setRecording(false)
+      setLoadingResponse(false)
+    }
+  ), [question])
 
+  const convertToGoodAndBad = (feedback:string)=> {
+    const feedbackArray = feedback.split('@u5W$')
+    const goodArr = feedbackArray[1].split("...")
+    const badArr = feedbackArray[2].split("...")
+    setReviewGood(goodArr)
+    setReviewBad(badArr)
+  }
   
   const sendForReview = async()=> {
 
@@ -25,7 +44,8 @@ export default function InterviewRecord() {
 
       const formData = new FormData();
       formData.append("video",blob,"video.webm")
-      formData.append("question", "How do you prioritize tasks when working on multiple projects with tight deadlines?" )
+      formData.append("question", question.body )
+      formData.append("id",question.id.toString())
 
     const response = await axiosInstance.post("/Interview/rateAnswer",formData,{
       headers: {
@@ -33,29 +53,23 @@ export default function InterviewRecord() {
       }
     });
     setLoadingResponse(false)
-    const data:ratingResponse = response.data
+    const data:question = response.data
+    convertToGoodAndBad(data.feedback)
 
-    const goodArr = data.good.split("..")
-    goodArr.pop()
-   
-    const badArr = data.bad.split('...')
-    badArr.pop()
-   
-    setReviewGood(goodArr)
-    setReviewBad(badArr)
+
 
     }
   }
   return (
-    <div className='flex flex-col h-screen space-y-10 mt-2'>
+    <div className='flex items-center flex-col justify-center h-screen w-full'>
   <h2 className='text-2xl font-bold text-center mb-5 w-full'>Record Interview</h2>
-  <h2 className='font-bold text-center mb-5 w-full'>Question: {question}</h2>
+  <h2 className='font-bold text-center mb-5 w-full whitespace-normal break-words'>Question: {question.body}</h2>
   
   <div className='flex justify-center items-start space-x-10 w-full h-2/3 xl:h-[80%] lg:h-[78%]'>
     {/* Record Section */}
     <div className='flex flex-col items-center border-2 border-black p-5 xl:w-2/5 w-1/3  h-full'>
       <h2 className='text-xl font-bold mb-4'>Record</h2>
-      <VideoRecord responseLoading={loadingResponse} setBlob={setBlob} setRecording={setRecording} recording={recording} sendForReview={sendForReview} />
+      <VideoRecord videoLink={question.videoLink} responseLoading={loadingResponse} setBlob={setBlob} setRecording={setRecording} recording={recording} sendForReview={sendForReview} />
       
     </div>
     
@@ -83,9 +97,7 @@ export default function InterviewRecord() {
         </div>
       )}
       </> :
-      <div className="flex justify-center items-center h-screen">
-      <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
+      <Spinner/>
     }
     </div>
   </div>

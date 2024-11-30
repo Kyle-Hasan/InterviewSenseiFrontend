@@ -8,10 +8,11 @@ interface VideoRecordProps {
   recording: boolean
   setRecording: (recording:boolean) => void,
   sendForReview: ()=> void,
-  responseLoading: boolean
+  responseLoading: boolean,
+  videoLink:string | null
   
 }
-export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading}:VideoRecordProps) {
+export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading,videoLink}:VideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const [hasVideo,setHasVideo] = useState(false)
@@ -37,6 +38,38 @@ useEffect(()=> {
     }
   }
 }, [])
+
+useEffect(()=> {
+  debugger
+
+  if(videoRef.current) {
+
+
+  videoRef.current.pause()
+
+  if( videoLink) {
+
+  videoRef.current.src = videoLink
+  videoRef.current.load()
+  videoRef.current.currentTime = 0
+
+  }
+
+  else if(videoLink == null) {
+    videoRef.current.src = ""
+    setHasVideo(false)
+  }
+  
+}
+
+
+
+  return ()=> {
+    if(mediaRecorder.current) {
+    stopRecording()
+    }
+  }
+}, [videoLink])
 
 
 

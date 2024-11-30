@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import Link from "next/link";
-import axiosInstance from "../utils/axiosInstance";
-import { User } from "../types/userType";
-import { AuthContext } from "../contexts/AuthContext";
+import axiosInstance from "../../app/utils/axiosInstance";
+import { User } from "../../app/types/userType";
+import { AuthContext } from "../../app/contexts/AuthContext";
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
