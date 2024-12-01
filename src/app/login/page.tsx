@@ -21,7 +21,7 @@ const LoginPage = () => {
     const response = await axiosInstance.post("/Auth/login", {username,password})
     const userData:User = response.data
     if (userData) {
-      router.push("/interviewRecord")
+      router.push("/viewInterviews")
       authContext?.setLogin(userData)
     } else {
       alert("Login failed");

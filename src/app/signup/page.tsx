@@ -14,6 +14,7 @@ const SignupPage = () => {
   const [username,setUsername] = useState("")
   const [password, setPassword] = useState("");
   const authContext = useContext(AuthContext)
+  const router = useRouter();
   
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,6 +26,7 @@ const SignupPage = () => {
     if (userData) {
       
       authContext?.setLogin(userData)
+      router.push("/viewInterviews")
     } else {
       alert("Signup failed");
     }

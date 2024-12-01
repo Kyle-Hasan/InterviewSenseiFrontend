@@ -4,6 +4,9 @@ import React, { useState } from 'react'
 import InterviewRecord from './InterviewRecord'
 import { Button } from './ui/button'
 
+
+
+
 interface interviewQuestionsProps {
     questions:question[]
 }
@@ -21,7 +24,7 @@ export const InterviewQuestions = ({questions}:interviewQuestionsProps) => {
 </div>
 
 
-        <InterviewRecord question={questions[currentQuestionIndex]}></InterviewRecord>
+        <InterviewRecord question={questions[currentQuestionIndex]} disabled={false}></InterviewRecord>
         
         </div>
   )

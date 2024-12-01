@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import axiosInstance from "./app/utils/axiosInstance";
 
 export function middleware(request: NextRequest) {
     
@@ -7,19 +8,22 @@ export function middleware(request: NextRequest) {
 
     const currentPath = request.nextUrl.pathname;
 
-    console.log(request.cookies)
+    
 
-    const token = request.cookies.get("accessToken")
+    const accessToken = request.cookies.get("accessToken")
+    const refreshToken = request.cookies.get("refreshToken")
     
     if (publicRoutes.includes(currentPath)) {
+        
         return NextResponse.next();
     }
 
   
-    if (!token?.value) {
+    if (!accessToken?.value) {
         const loginUrl = new URL("/login", request.url);
         return NextResponse.redirect(loginUrl);
     }
+    
 
     return NextResponse.next();
 }

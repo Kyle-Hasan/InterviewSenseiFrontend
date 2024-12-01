@@ -1,14 +1,15 @@
 'use client'
 import VideoRecord from '@/components/VideoRecord'
 import React, { useEffect, useState } from 'react'
-import { ratingResponse } from '../app/types/ratingResponse'
+
 
 import axiosInstance from '../app/utils/axiosInstance'
 import Spinner from '@/components/Spinner'
 import { question } from '@/app/types/interview'
 
 interface InterviewRecordProps {
-  question:question
+  question:question,
+  disabled:boolean
 }
 
 export default function InterviewRecord({question}:InterviewRecordProps) {

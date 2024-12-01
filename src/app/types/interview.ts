@@ -12,7 +12,7 @@ export interface interview {
     questions:question[]
     name:string,
     jobDescription:string,
-    resumeLink:string
+    resumeLink:string,
     
 }
 

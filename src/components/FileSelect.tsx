@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 interface fileSelectProps {
     files:File[],
     setFiles:(newValue:File[])=> void
+    disabled:boolean
 }
-export default function FileSelect({files,setFiles}:fileSelectProps) {
+export default function FileSelect({files,setFiles,disabled}:fileSelectProps) {
 
     
     const [error,setError] = useState("")
@@ -50,7 +51,9 @@ export default function FileSelect({files,setFiles}:fileSelectProps) {
 
    }
   return (
+    
     <div className='space-y-4 flex flex-col'>
+    {!disabled && 
     <div onDrop={handleDrop} onDragOver={handleDrag} className={`flex flex-col items-center space-x-2 px-4 py-5 transition border-black border-dotted border-2 p-3 hover:bg-gray-200 ${dragging  ? 'bg-gray-200' : 'bg-gray-50'}`}>
         <p className="text-gray-500">Drag & drop PDF files here</p>
         <p className="text-sm text-gray-400">(or click to select files)</p>
@@ -62,6 +65,7 @@ export default function FileSelect({files,setFiles}:fileSelectProps) {
           className="w-full h-full cursor-pointer opacity-0"
         />
         </div>
+        }
         {error.length > 0 && <p className='text-red-600'>{error}</p>}
         {files.length > 0 && <ul>
             {files.map(x=> <li key={x.name}>{x.name}</li>)}
