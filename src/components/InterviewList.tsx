@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Delete02Icon,PencilEdit02Icon} from "hugeicons-react";
 import Spinner from './Spinner';
 import axiosInstance from '@/app/utils/axiosInstance';
+import { DeleteConfirmation } from './deleteConfirmation';
 
 export default function InterviewList({ initialInterviews }: { initialInterviews: interview[] }) {
   const [interviews, setInterviews] = useState(initialInterviews);
@@ -40,11 +41,12 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
             <div className='text-center font-bold' onClick={()=> {navigateToInterview(item.id)}} >
             {item.name}
             </div>
-            <div className='mt-1 mb-1'>
+            <div className='mt-1 mb-1 text-center'>
               {item.createdDate}
             </div>
             <div className='flex space-x-2 justify-center items-center'>
-            <button onClick={() => deleteItem(item.id)}><Delete02Icon></Delete02Icon></button>
+            <DeleteConfirmation onConfirm={(e)=> {deleteItem(item.id)}} buttonContent={<Delete02Icon></Delete02Icon>}></DeleteConfirmation>
+            
             <button onClick={() => editItem(item.id, prompt('Enter new name:') || item.name)}>
               <PencilEdit02Icon></PencilEdit02Icon>
             </button>
