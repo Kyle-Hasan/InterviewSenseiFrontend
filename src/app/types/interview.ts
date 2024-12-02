@@ -13,6 +13,7 @@ export interface interview {
     name:string,
     jobDescription:string,
     resumeLink:string,
+    createdDate:string
     
 }
 

@@ -8,6 +8,7 @@ interface ViewInterviewClientProps {
   interview:interview
 }
 const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
+  console.log(interview)
   const convertInterviewToInitialData = ()=> {
     const name = interview.name
     const jobDescription = interview.jobDescription

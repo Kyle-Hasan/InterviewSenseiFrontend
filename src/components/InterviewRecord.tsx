@@ -19,6 +19,7 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
   const [reviewBad,setReviewBad] = useState<string[]>([])
   const [recording,setRecording] = useState(false)
   const [loadingResponse,setLoadingResponse] = useState(false)
+  const [response,setResponse] = useState("")
 
   useEffect((
     ()=> {
@@ -30,10 +31,22 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
 
   const convertToGoodAndBad = (feedback:string)=> {
     const feedbackArray = feedback.split('@u5W$')
+    if(feedbackArray.length == 1) {
+      setReviewBad([feedbackArray[0]])
+    }
+    else {
     const goodArr = feedbackArray[1].split("...")
+    if(goodArr.length > 0) {
+     goodArr[0] =  goodArr[0].replace("Good: ", "")
+    }
+    
     const badArr = feedbackArray[2].split("...")
+    if(badArr.length > 0) {
+      badArr[0] = badArr[0].replace("Needs Improvement: ","")
+    }
     setReviewGood(goodArr)
     setReviewBad(badArr)
+  }
   }
   
   const sendForReview = async()=> {
@@ -56,6 +69,7 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
     setLoadingResponse(false)
     const data:question = response.data
     convertToGoodAndBad(data.feedback)
+    setResponse(data.response)
 
 
 
@@ -80,6 +94,10 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
       { !loadingResponse ? 
       
       <>
+      <div className='mb-2 mt-1'>
+      <h3 className='font-bold text-center underline mb-2'>Your Response</h3>
+      <p>{response}</p>
+      </div>
       {reviewGood && reviewGood.length > 0 && (
         <div className='w-full'>
           <h3 className='font-bold text-center underline mb-2'>Good</h3>

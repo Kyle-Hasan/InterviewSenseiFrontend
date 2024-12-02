@@ -22,7 +22,7 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
 
   };
 
-  const editItem = async (id: n, newName: string) => {
+  const editItem = async (id: number, newName: string) => {
    
   };
 
@@ -39,6 +39,9 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
           <li key={item.id} className='border-black border-2 p-3 mt-1 flex flex-col space-y-2 w-96 hover:cursor-pointer'>
             <div className='text-center font-bold' onClick={()=> {navigateToInterview(item.id)}} >
             {item.name}
+            </div>
+            <div className='mt-1 mb-1'>
+              {item.createdDate}
             </div>
             <div className='flex space-x-2 justify-center items-center'>
             <button onClick={() => deleteItem(item.id)}><Delete02Icon></Delete02Icon></button>

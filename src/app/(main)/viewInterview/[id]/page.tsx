@@ -1,7 +1,7 @@
 
 
 
-import { interview } from "../../types/interview";
+import { interview } from "../../../types/interview";
 import ViewInterviewClient from "@/components/viewInterviewClient";
 import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
 
@@ -15,9 +15,7 @@ export async function fetchInterview(id:string) {
   return interviewResponse.data
 }
 
-interface props {
-  interview:interview
-}
+
 
 export default  async function Page({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const {id} = await paramsPromise

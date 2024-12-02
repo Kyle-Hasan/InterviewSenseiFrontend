@@ -20,10 +20,10 @@ export default function VideoRecord({recording,setRecording,setBlob,sendForRevie
   const mediaRecorder =  useRef<MediaRecorder | null>(null)
   const mediaStream = useRef<MediaStream | null>(null)
   const [firstRecording,setFirstRecording] = useState(false)
-  const TIMEOUT = 10*1000 // 2 minutes
+  const TIMEOUT = 120*1000 // 2 minutes
   const [timeRemaining,setTimeRemaining] = useState(TIMEOUT/1000)
-  const [minutes,setMinutes] = useState("00")
-  const [seconds,setSeconds] = useState("10")
+  const [minutes,setMinutes] = useState("02")
+  const [seconds,setSeconds] = useState("00")
  
 
   const intervalId = useRef<NodeJS.Timeout | null>(null)
@@ -31,33 +31,39 @@ export default function VideoRecord({recording,setRecording,setBlob,sendForRevie
 // clean up interval
 useEffect(()=> {
 
-
+  
   return ()=> {
     if(intervalId.current) {
     clearInterval(intervalId.current)
     }
+    
   }
 }, [])
 
 useEffect(()=> {
-  debugger
+  setHasVideo(false)
+
+  
 
   if(videoRef.current) {
+  
 
 
   videoRef.current.pause()
 
-  if( videoLink) {
+  if( videoLink && videoLink.length > 0) {
 
   videoRef.current.src = videoLink
   videoRef.current.load()
   videoRef.current.currentTime = 0
+  videoRef.current.muted = false
+  
 
   }
 
-  else if(videoLink == null) {
+  else if(!videoLink || videoLink.length === 0) {
     videoRef.current.src = ""
-    setHasVideo(false)
+  
   }
   
 }
@@ -68,6 +74,9 @@ useEffect(()=> {
     if(mediaRecorder.current) {
     stopRecording()
     }
+
+  
+    
   }
 }, [videoLink])
 
@@ -147,6 +156,7 @@ useEffect(()=> {
 
       if (videoRef.current && mediaStream.current) {
         videoRef.current.srcObject = mediaStream.current;
+        videoRef.current.muted = true;
         videoRef.current.play();
       }
 
@@ -194,8 +204,8 @@ useEffect(()=> {
       
       <h2 className="text-2xl font-bold mb-3">Preview</h2>
       {
-        hasVideo ?
-      <video className="size-auto" ref={videoRef} autoPlay muted></video> : <p className='text'>Press start recording to show video</p>
+        hasVideo || (videoLink && videoLink.length > 0) ?
+      <video className="size-auto" ref={videoRef} autoPlay controls muted></video> : <p className='text'>Press start recording to show video</p>
         }
       <br />
 

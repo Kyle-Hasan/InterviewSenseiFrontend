@@ -38,15 +38,15 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
               'Content-Type':'multipart/form-data'
             }
           });
-          debugger
+         
         const data:interview = response.data
         setLoading(false)
-        router.push("/viewInterview/"+data.id)
+        router.push("/interviewQuestions/"+data.id)
         
     }
 
   return ( !loading ? <div className="flex flex-col items-center h-screen mt-5">
-         <h2 className='text-2xl font-bold text-center mb-5 w-full'>Generate Interview Questions</h2>
+         <h2 className='text-2xl font-bold text-center mb-5 w-full'>{ !disabled ? "Generate Interview Questions" : "Interview Information"} </h2>
          <form onSubmit={handleSubmit} className="flex flex-col items-center justify-center space-y-4 xl:w-2/3 p-6 bg-white shadow rounded">
          <p>Name </p>
          <Input

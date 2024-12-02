@@ -1,8 +1,6 @@
 
 import InterviewList from '@/components/InterviewList';
-import axiosInstance from '../utils/axiosInstance';
-import { cookies } from 'next/headers';
-import serverAxiosInstance from '../utils/serverAxiosInstance';
+import serverAxiosInstance from '../../utils/serverAxiosInstance';
 
 
 async function fetchInterviews() {
