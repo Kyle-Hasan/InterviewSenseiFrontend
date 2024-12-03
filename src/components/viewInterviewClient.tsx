@@ -34,7 +34,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
     { !showQuestions ? 
     <div className='w-full'>
     <InterviewForm initialData={initialData} disabled={true}></InterviewForm> </div> :
-    <InterviewQuestions questions={interview.questions} />
+    <InterviewQuestions questionsProp={interview.questions} />
     }
     </div>
   )

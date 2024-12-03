@@ -9,10 +9,13 @@ interface VideoRecordProps {
   setRecording: (recording:boolean) => void,
   sendForReview: ()=> void,
   responseLoading: boolean,
-  videoLink:string | null
+  videoLink:string | null,
+  setUnsavedVideo: (recording:boolean) => void,
+  question: string
+
   
 }
-export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading,videoLink}:VideoRecordProps) {
+export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading,videoLink,setUnsavedVideo,question}:VideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const [hasVideo,setHasVideo] = useState(false)
@@ -21,6 +24,7 @@ export default function VideoRecord({recording,setRecording,setBlob,sendForRevie
   const mediaStream = useRef<MediaStream | null>(null)
   const [firstRecording,setFirstRecording] = useState(false)
   const TIMEOUT = 120*1000 // 2 minutes
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [timeRemaining,setTimeRemaining] = useState(TIMEOUT/1000)
   const [minutes,setMinutes] = useState("02")
   const [seconds,setSeconds] = useState("00")
@@ -41,7 +45,9 @@ useEffect(()=> {
 }, [])
 
 useEffect(()=> {
+  
   setHasVideo(false)
+  setFirstRecording(false)
 
   
 
@@ -63,6 +69,7 @@ useEffect(()=> {
 
   else if(!videoLink || videoLink.length === 0) {
     videoRef.current.src = ""
+    setHasVideo(false)
   
   }
   
@@ -78,7 +85,7 @@ useEffect(()=> {
   
     
   }
-}, [videoLink])
+}, [question])
 
 
 
@@ -99,7 +106,6 @@ useEffect(()=> {
             }
           });
 
-          
 
           
           intervalId.current = setInterval(() => {
@@ -144,7 +150,7 @@ useEffect(()=> {
 
   const startRecording = async () => {
     
-    
+    setUnsavedVideo(true)
     try {
       setRecording(true);
       setHasVideo(true)
@@ -205,7 +211,7 @@ useEffect(()=> {
       <h2 className="text-2xl font-bold mb-3">Preview</h2>
       {
         hasVideo || (videoLink && videoLink.length > 0) ?
-      <video className="size-auto" ref={videoRef} autoPlay controls muted></video> : <p className='text'>Press start recording to show video</p>
+      <video className="lg:size-4/5 sm:size-auto" ref={videoRef} autoPlay controls muted></video> : <p className='text'>Press start recording to show video</p>
         }
       <br />
 

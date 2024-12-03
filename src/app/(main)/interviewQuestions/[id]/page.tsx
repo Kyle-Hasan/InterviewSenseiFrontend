@@ -1,8 +1,7 @@
 
 
 
-import { interview } from "../../../types/interview";
-import ViewInterviewClient from "@/components/viewInterviewClient";
+
 import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
 import { InterviewQuestions } from "@/components/interviewQuestions";
 
@@ -27,7 +26,7 @@ export default  async function Page({ params: paramsPromise }: { params: Promise
 
   return (
     <div >
-     <InterviewQuestions questions={interview.questions} />
+     <InterviewQuestions questionsProp={interview.questions} />
     </div>
   );
 }

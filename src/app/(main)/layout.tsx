@@ -17,7 +17,8 @@ export default function MainLayout({
       <>
       <AuthProvider>
       <Navbar></Navbar>
-        {children}</AuthProvider>
+        {children}
+        </AuthProvider>
         </>
     
   );

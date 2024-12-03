@@ -6,13 +6,16 @@ import React, { useEffect, useState } from 'react'
 import axiosInstance from '../app/utils/axiosInstance'
 import Spinner from '@/components/Spinner'
 import { question } from '@/app/types/interview'
+import { useQuestionStore } from '@/app/hooks/useQuestions'
 
 interface InterviewRecordProps {
   question:question,
-  disabled:boolean
+  disabled:boolean,
+  setUnsavedVideo: (recording:boolean) => void,
+  
 }
 
-export default function InterviewRecord({question}:InterviewRecordProps) {
+export default function InterviewRecord({question,setUnsavedVideo}:InterviewRecordProps) {
 
   const [blob,setBlob] = useState<Blob>()
   const [reviewGood,setReviewGood] = useState<string[]>([])
@@ -20,29 +23,41 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
   const [recording,setRecording] = useState(false)
   const [loadingResponse,setLoadingResponse] = useState(false)
   const [response,setResponse] = useState("")
+  const updateQuestion = useQuestionStore((state)=> state.updateQuestion)
+  
 
   useEffect((
     ()=> {
       setBlob(undefined)
       setRecording(false)
       setLoadingResponse(false)
+      setReviewBad([])
+      setReviewGood([])
+      if(question.feedback && question.feedback.length > 0) {
+      convertToGoodAndBad(question.feedback)
+      }
+      setResponse(question.response)
+      
     }
   ), [question])
 
   const convertToGoodAndBad = (feedback:string)=> {
+    debugger
     const feedbackArray = feedback.split('@u5W$')
     if(feedbackArray.length == 1) {
       setReviewBad([feedbackArray[0]])
     }
     else {
-    const goodArr = feedbackArray[1].split("...")
+    let goodArr = feedbackArray[1].split("...")
     if(goodArr.length > 0) {
      goodArr[0] =  goodArr[0].replace("Good: ", "")
+     goodArr = goodArr.map(x => x.replace("$","")).filter(x=> x.length > 0)
     }
     
-    const badArr = feedbackArray[2].split("...")
+    let badArr = feedbackArray[2].split("...")
     if(badArr.length > 0) {
       badArr[0] = badArr[0].replace("Needs Improvement: ","")
+      badArr = badArr.map(x => x.replace("$","")).filter(x=> x.length > 0)
     }
     setReviewGood(goodArr)
     setReviewBad(badArr)
@@ -66,15 +81,15 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
         'Content-Type':'multipart/form-data'
       }
     });
+    setUnsavedVideo(false)
     setLoadingResponse(false)
     const data:question = response.data
     convertToGoodAndBad(data.feedback)
     setResponse(data.response)
-
-
-
-    }
+    updateQuestion(data)
+    
   }
+}
   return (
     <div className='flex items-center flex-col justify-center h-screen w-full'>
   <h2 className='text-2xl font-bold text-center mb-5 w-full'>Record Interview</h2>
@@ -84,7 +99,7 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
     {/* Record Section */}
     <div className='flex flex-col items-center border-2 border-black p-5 xl:w-2/5 w-1/3  h-full'>
       <h2 className='text-xl font-bold mb-4'>Record</h2>
-      <VideoRecord videoLink={question.videoLink} responseLoading={loadingResponse} setBlob={setBlob} setRecording={setRecording} recording={recording} sendForReview={sendForReview} />
+      <VideoRecord question={question.body} setUnsavedVideo={setUnsavedVideo} videoLink={question.videoLink} responseLoading={loadingResponse} setBlob={setBlob} setRecording={setRecording} recording={recording} sendForReview={sendForReview} />
       
     </div>
     
@@ -124,4 +139,4 @@ export default function InterviewRecord({question}:InterviewRecordProps) {
 
   )
 
-}
+  }
