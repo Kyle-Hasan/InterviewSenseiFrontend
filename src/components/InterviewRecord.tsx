@@ -42,7 +42,7 @@ export default function InterviewRecord({question,setUnsavedVideo}:InterviewReco
   ), [question])
 
   const convertToGoodAndBad = (feedback:string)=> {
-    debugger
+  
     const feedbackArray = feedback.split('@u5W$')
     if(feedbackArray.length == 1) {
       setReviewBad([feedbackArray[0]])

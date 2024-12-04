@@ -26,7 +26,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
     return {name:name,jobDescription:jobDescription,resume:null,numberOfTechnical:numberOfTechnical,numberOfBehavioral:numberOfBehavioral}
   }
   const [showQuestions,setShowQuestions] = useState(false)
-  const [initialData,setInitialDate] = useState(convertInterviewToInitialData())
+  const [initialData,setInitialData] = useState(convertInterviewToInitialData())
   return (
     <div className='flex flex-col h-full items-center justify-center'>
 

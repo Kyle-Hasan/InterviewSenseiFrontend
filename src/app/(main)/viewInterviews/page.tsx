@@ -6,7 +6,13 @@ import serverAxiosInstance from '../../utils/serverAxiosInstance';
 async function fetchInterviews() {
   try{
   
-  const response = await serverAxiosInstance.get("/Interview/interviewList",
+  const response = await serverAxiosInstance.get("/Interview/interviewList",{
+    params: {
+      startIndex:0,
+      pageSize:10,
+      
+    }
+  }
   )
   return response.data
   }
