@@ -74,7 +74,7 @@ export default function InterviewRecord({question,setUnsavedVideo}:InterviewReco
       const formData = new FormData();
       formData.append("video",blob,"video.webm")
       formData.append("question", question.body )
-      formData.append("id",question.id.toString())
+      formData.append("questionId",question.id.toString())
 
     const response = await axiosInstance.post("/Interview/rateAnswer",formData,{
       headers: {

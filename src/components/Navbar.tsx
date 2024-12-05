@@ -1,14 +1,19 @@
 'use client'
 import { AuthContext } from '@/app/contexts/AuthContext'
 import Link from 'next/link'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Menu01Icon, Cancel01Icon } from 'hugeicons-react'
 import { useRouter } from 'next/navigation'
 import axiosInstance from '@/app/utils/axiosInstance'
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from './ui/navigation-menu'
 
 export const Navbar = () => {
-  const username = sessionStorage.getItem("username")
+  const [username,setUsername] = useState<string>("")
+
+  useEffect(()=> {
+    setUsername(sessionStorage.getItem("username") || "")
+  },[])
+ 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
 
