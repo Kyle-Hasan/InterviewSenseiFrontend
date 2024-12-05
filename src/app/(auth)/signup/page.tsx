@@ -14,10 +14,19 @@ const SignupPage = () => {
   const [password, setPassword] = useState("");
   const authContext = useContext(AuthContext)
   const router = useRouter();
+  const [errors,setErrors] = useState("")
   
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setErrors("")
     e.preventDefault();
+
+    if(username.length === 0 || password.length === 0 ) {
+      setErrors("Username and password are required")
+      return
+    }
+
+    try {
 
     const response = await axiosInstance.post("/Auth/register",{email,username,password})
 
@@ -26,9 +35,12 @@ const SignupPage = () => {
       
       authContext?.setLogin(userData)
       router.push("/viewInterviews")
-    } else {
-      alert("Signup failed");
     }
+
+  }
+  catch(e) {
+    setErrors("sign up failed, please try again ")
+  }
   };
 
   return (
@@ -63,6 +75,7 @@ const SignupPage = () => {
         >
         Login
       </Link>
+      {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
       </form>
     </div>
   );

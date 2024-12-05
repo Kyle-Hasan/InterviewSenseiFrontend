@@ -19,9 +19,12 @@ const AuthProvider = ({children}: {children:ReactNode})=> {
     const [userId,setUserId] = useState<number | null>(null)
 
     const setLogin = (user:User) => {
+       
         localStorage.setItem("accessToken",user.accessToken)
         localStorage.setItem("refreshToken",user.refreshToken)
-        setUsername(user.username)
+        
+        sessionStorage.setItem("username",user.username)
+        sessionStorage.setItem("userId",user.id?.toString())
         setUserId(user.id)
     }
 

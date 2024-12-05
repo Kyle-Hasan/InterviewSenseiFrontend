@@ -13,19 +13,28 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const authContext = useContext(AuthContext)
+  const [errors,setErrors] = useState("")
   
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setErrors("")
     e.preventDefault();
-
+    if(username.length === 0 || password.length === 0 ) {
+      setErrors("Username and password are required")
+      return
+    }
+    try {
     const response = await axiosInstance.post("/Auth/login", {username,password})
     const userData:User = response.data
     if (userData) {
       router.push("/viewInterviews")
+      debugger
       authContext?.setLogin(userData)
-    } else {
-      alert("Login failed");
-    }
+    } 
+  }
+  catch(e) {
+    setErrors("Login failed, please try again")
+  }
   };
 
   return (
@@ -33,7 +42,7 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} className="space-y-4 w-80 p-6 bg-white shadow rounded">
         <h1 className="text-2xl font-bold">Login</h1>
         <Input
-          placeholder="username"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
@@ -53,6 +62,7 @@ const LoginPage = () => {
         >
         No Account? Sign up
       </Link>
+      {errors.length > 0 && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
       </form>
       
     </div>

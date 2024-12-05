@@ -67,7 +67,7 @@ export default function InterviewRecord({question,setUnsavedVideo}:InterviewReco
   const sendForReview = async()=> {
 
     
-
+    try {
     if(blob) {
       setLoadingResponse(true)
 
@@ -87,8 +87,14 @@ export default function InterviewRecord({question,setUnsavedVideo}:InterviewReco
     convertToGoodAndBad(data.feedback)
     setResponse(data.response)
     updateQuestion(data)
+  }
+  
     
   }
+  catch(e) {
+    alert("Error " + e)
+  }
+
 }
   return (
     <div className='flex items-center flex-col justify-center h-screen w-full'>

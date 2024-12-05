@@ -219,7 +219,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
          <div className='flex flex-row items-center justify-center space-x-4'>
           <Button onClick={()=> filterChangeDate()}>Sort by date {dateSort === "ASC" ? <ArrowDown02Icon color='white'/> : dateSort === "DESC" && <ArrowUp01Icon color='white'/>  } </Button>
           <Button onClick={()=> filterChangeName()}>Sort by name {nameSort === "ASC" ? <ArrowDown02Icon color='white'/> : nameSort === "DESC" && <ArrowUp01Icon color='white'/>  } </Button>
-          <Input placeholder='Search by name' onChange={textSearchChange}></Input>
+          <Input placeholder='Search by name' onChange={textSearchChange} value={searchText}></Input>
           </div>
           <div className='h-auto overflow-auto'>
         

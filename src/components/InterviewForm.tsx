@@ -28,8 +28,16 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     const [files,setFiles] = useState<File[]>([])
     const [loading,setLoading] = useState(false)
     const router = useRouter()
+    const [errors,setErrors] = useState("")
 
     const handleSubmit = async()=> {
+      setErrors("")
+
+      if(formData.numberOfBehavioral + formData.numberOfTechnical === 0 ) {
+        setErrors("Need more than 1 question")
+        return
+      }
+      try {
         setLoading(true)
         // add form validation here
         const formBody = {...formData,resume: files && files.length > 0 ? files[0]: null}
@@ -42,6 +50,10 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
         const data:interview = response.data
         setLoading(false)
         router.push("/interviewQuestions/"+data.id)
+      }
+      catch(e) {
+        setErrors("Errors : " + e)
+      }
         
     }
 
@@ -98,6 +110,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
 
     {!disabled && <Button type='submit' className='mt-2' onClick={handleSubmit}>Submit</Button>}
          </form>
+         {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
     </div> : <Spinner/>
   )
 }
