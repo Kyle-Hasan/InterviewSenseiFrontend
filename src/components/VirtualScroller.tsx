@@ -1,17 +1,23 @@
 'use client'
 import React, { ReactNode, useRef } from 'react'
+import Spinner from './Spinner';
 interface VirtualScrollerProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    list:any[],
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    totalItems:number
+  
     refreshFunction:Function,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-explicit-any
-    displayFunction: (item:any)=>ReactNode,
+
+    numberRendered:number
+    
+
+    children: React.ReactNode;
+
+    listLoading:boolean
 
 
 
 }
-const VirtualScroller = ({refreshFunction,list,displayFunction}:VirtualScrollerProps) => {
+const VirtualScroller = ({refreshFunction,totalItems,numberRendered,children,listLoading}:VirtualScrollerProps) => {
 
   const divRef = useRef<HTMLDivElement>(null)
 
@@ -20,8 +26,8 @@ const VirtualScroller = ({refreshFunction,list,displayFunction}:VirtualScrollerP
     
 
     const reachedBottom = divRef.current && divRef.current.scrollHeight > divRef.current.clientHeight + divRef.current.scrollTop
- 
-    if(reachedBottom) { 
+    
+    if(reachedBottom && totalItems > numberRendered) { 
         
         await refreshFunction()
       
@@ -36,7 +42,8 @@ const VirtualScroller = ({refreshFunction,list,displayFunction}:VirtualScrollerP
         ref={divRef}
         onScroll={handleScroll}
       >
-        {list.map(displayFunction)}
+        {children}
+        {listLoading && <Spinner></Spinner>}
       </div>
     
   );

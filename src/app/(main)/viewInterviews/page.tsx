@@ -1,6 +1,7 @@
 
 import InterviewList from '@/components/InterviewList';
 import serverAxiosInstance from '../../utils/serverAxiosInstance';
+import { PaginationParams } from '@/app/types/PaginationParams';
 
 
 async function fetchInterviews() {
@@ -14,7 +15,9 @@ async function fetchInterviews() {
     }
   }
   )
-  return response.data
+  const paginationParams:PaginationParams = JSON.parse(response.headers["pagination"])
+  const total = paginationParams.total
+  return {total,interviews:response.data}
   }
   catch(e) {
     console.error(e)
@@ -23,8 +26,8 @@ async function fetchInterviews() {
 }
 
 export default async function viewInterviews() {
-  const interviews = await fetchInterviews();
+  const interviewsObj = await fetchInterviews();
 
 
-  return <InterviewList initialInterviews={interviews} />;
+  return <InterviewList initialInterviews={interviewsObj?.interviews} totalInterviewsProp={interviewsObj?.total ? interviewsObj.total : 0} />;
 }

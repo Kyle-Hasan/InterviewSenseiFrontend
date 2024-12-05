@@ -12,8 +12,13 @@ import { Button } from './ui/button';
 import debounce from "lodash/debounce";
 import { ArrowUp01Icon } from 'hugeicons-react';
 import { ArrowDown02Icon } from 'hugeicons-react';
-import InfiniteScroll from 'react-infinite-scroller';
-export default function InterviewList({ initialInterviews }: { initialInterviews: interview[] }) {
+
+import { PaginationParams } from '@/app/types/PaginationParams';
+import VirtualScroller from './VirtualScroller';
+
+
+
+export default function InterviewList({ initialInterviews,totalInterviewsProp }: { initialInterviews: interview[], totalInterviewsProp:number }) {
   const [interviews, setInterviews] = useState([...initialInterviews]);
   const router = useRouter()
   const [loading,setLoading] = useState(false)
@@ -26,6 +31,8 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
   const [searchText,setSearchText] = useState("")
   const [nameSort, setNameSort] = useState("")
   const [dateSort,setDateSort] = useState("")
+  const [totalInterviews,setTotalInterviews]= useState(totalInterviewsProp)
+  const [listLoading,setListLoading] = useState(false)
 
 
 
@@ -40,21 +47,28 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
 
 
   const getMoreInterviews = async ()=> {
-    debugger
+    setListLoading(true)
+  
     const response = await axiosInstance.get("/Interview/interviewList",{
       params: {
         startIndex:index+pageSize,
-        pageSize:pageSize,
+        pageSize:1,
         ...(nameSort && nameSort.length && {nameSort} ),
         ...(dateSort && dateSort.length && {dateSort} ),
         ...(searchText && searchText.length && {name:searchText} )
       }
     }
     )
+    const paginationParams:PaginationParams = JSON.parse(response.headers["pagination"])
+    setTotalInterviews(paginationParams.total)
+    
+  
     setIndex(index+1)
 
     const newInterviews = [...interviews,...response.data]
+    
     setInterviews(newInterviews)
+    setListLoading(false)
 
   }
 
@@ -75,6 +89,8 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
     )
 
     setLoading(false)
+    const paginationParams:PaginationParams = JSON.parse(response.headers["pagination"])
+    setTotalInterviews(paginationParams.total)
   
     const newInterviews = [...response.data]
     setIndex(0)
@@ -208,9 +224,14 @@ export default function InterviewList({ initialInterviews }: { initialInterviews
           <div className='h-auto overflow-auto'>
         
     
-          <ul className='space-y-4 w-96'>
-          {interviews.map(renderInterview)}
-          </ul>
+          <div
+          className='h-auto overflow-scroll'
+          >
+            <VirtualScroller loading={listLoading} totalItems={totalInterviews} numberRendered={interviews.length} refreshFunction={getMoreInterviews}>
+              {interviews.map(renderInterview)}
+            </VirtualScroller>
+
+          </div>
         
          
 
