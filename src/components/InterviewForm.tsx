@@ -9,6 +9,9 @@ import { Textarea } from '@/components/ui/textarea'
 import Spinner from '@/components/Spinner'
 import FileSelect from './FileSelect'
 import { Button } from './ui/button'
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { setServers } from 'dns'
+import { useInterviewStore } from '@/app/hooks/useInterviews'
 
 interface interviewFormData {
     resume:File | null,
@@ -30,7 +33,14 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     const router = useRouter()
     const [errors,setErrors] = useState("")
 
+    const queryClient = useQueryClient()
+    const {setInterview} = useInterviewStore()
+
+    
+
     const handleSubmit = async()=> {
+
+
       setErrors("")
 
       if(formData.numberOfBehavioral + formData.numberOfTechnical === 0 ) {
@@ -48,14 +58,24 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
           });
          
         const data:interview = response.data
+        setInterview(data)
         setLoading(false)
         router.push("/interviewQuestions/"+data.id)
       }
       catch(e) {
         setErrors("Errors : " + e)
       }
+      finally {
+        setLoading(false)
+        setErrors("")
+      }
         
     }
+
+    const submitMutation = useMutation({
+      mutationFn: handleSubmit,
+      onSuccess: ()=> {queryClient.invalidateQueries()}
+    })
 
   return ( !loading ? <div className="flex flex-col items-center h-screen mt-5">
          <h2 className='text-2xl font-bold text-center mb-5 w-full'>{ !disabled ? "Generate Interview Questions" : "Interview Information"} </h2>
@@ -108,7 +128,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     <p>Resume</p>
     <FileSelect disabled={disabled} files={files} setFiles={setFiles}></FileSelect>
 
-    {!disabled && <Button type='submit' className='mt-2' onClick={handleSubmit}>Submit</Button>}
+    {!disabled && <Button type='submit' className='mt-2' onClick={()=> {submitMutation.mutate()} }>Submit</Button>}
          </form>
          {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
     </div> : <Spinner/>

@@ -19,6 +19,7 @@ export const InterviewQuestions = ({questionsProp}:interviewQuestionsProps) => {
   const [unsavedVideo,setUnsavedVideo] = useState(false)
   const [dialogOpen,setDialogOpen] = useState(false)
   const setQuestions = useQuestionStore((state)=> state.setQuestion)
+  
 
   const questions = useQuestionStore((state)=> state.questions)
 

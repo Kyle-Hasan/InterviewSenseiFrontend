@@ -94,6 +94,11 @@ export default function InterviewRecord({question,setUnsavedVideo}:InterviewReco
   catch(e) {
     alert("Error " + e)
   }
+  finally {
+    setLoadingResponse(false)
+    setUnsavedVideo(false)
+
+  }
 
 }
   return (

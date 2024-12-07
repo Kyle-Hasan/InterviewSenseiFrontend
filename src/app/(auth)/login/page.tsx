@@ -28,7 +28,7 @@ const LoginPage = () => {
     const userData:User = response.data
     if (userData) {
       router.push("/viewInterviews")
-      debugger
+     
       authContext?.setLogin(userData)
     } 
   }
