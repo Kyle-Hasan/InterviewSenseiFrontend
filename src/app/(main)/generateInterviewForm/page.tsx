@@ -10,7 +10,8 @@ export default function generateInterviewForms() {
       numberOfBehavioral:0,
       numberOfTechnical:0,
       jobDescription:"",
-      name: ""
+      name: "",
+      secondsPerAnswer:120
     }
   
   return ( <InterviewForm initialData={initialData} disabled={false}></InterviewForm>

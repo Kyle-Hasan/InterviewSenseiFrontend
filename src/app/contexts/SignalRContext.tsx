@@ -34,7 +34,7 @@ export const SignalRProvider = ({ children }: {children:React.ReactNode}) => {
             .build();
 
         connection.onclose((error) => {
-            console.error(`SignalR connection for "${connectionKey}" closed.`, error);
+            console.log(`SignalR connection for "${connectionKey}" closed.`, error);
         });
 
         try {

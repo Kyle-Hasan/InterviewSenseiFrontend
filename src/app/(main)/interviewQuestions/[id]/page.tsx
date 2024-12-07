@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/app/utils/axiosInstance';
 import { InterviewQuestions } from '@/components/interviewQuestions';
 import { useEffect, useState } from 'react';
@@ -34,7 +34,7 @@ export default function InterviewPage() {
   useEffect(()=> {
     let mounted = true
    const getData =  async()=> {
-    debugger
+  
      
       setLoading(true)
       try{
@@ -79,7 +79,7 @@ export default function InterviewPage() {
 
   return (
     <div>
-      { interview && !loading ? <InterviewQuestions questionsProp={interview.questions}/> : <Spinner></Spinner>  }
+      { interview && !loading ? <InterviewQuestions secondsPerAnswer={interview.secondsPerAnswer} questionsProp={interview.questions}/> : <Spinner></Spinner>  }
     </div>
   );
 }

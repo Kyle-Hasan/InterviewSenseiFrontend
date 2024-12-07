@@ -23,7 +23,7 @@ axiosInstance.interceptors.response.use(
       try {
         const refreshResponse = await axios.get(
           "http://localhost:5095/api/Auth/refreshToken",
-          {},
+          
           { withCredentials: true }
         );
 

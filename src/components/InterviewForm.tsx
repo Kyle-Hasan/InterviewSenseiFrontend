@@ -10,7 +10,6 @@ import Spinner from '@/components/Spinner'
 import FileSelect from './FileSelect'
 import { Button } from './ui/button'
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { setServers } from 'dns'
 import { useInterviewStore } from '@/app/hooks/useInterviews'
 
 interface interviewFormData {
@@ -18,7 +17,8 @@ interface interviewFormData {
     numberOfBehavioral:number,
     numberOfTechnical:number,
     jobDescription:string,
-    name:string
+    name:string,
+    secondsPerAnswer:number
 }
 
 interface interviewFormProps {
@@ -38,18 +38,28 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
 
     
 
-    const handleSubmit = async()=> {
+    const handleSubmit = async(e)=> {
 
-
+      e.preventDefault()
       setErrors("")
 
       if(formData.numberOfBehavioral + formData.numberOfTechnical === 0 ) {
         setErrors("Need more than 1 question")
         return
       }
+
+      if(formData.name.length === 0) {
+        setErrors("Interview needs a name")
+        return
+      }
+      if(formData.secondsPerAnswer >= 20000 || formData.secondsPerAnswer < 10) {
+        setErrors("Seconds per answer must be between 10 and 20000 ")
+        return
+      }
       try {
         setLoading(true)
         // add form validation here
+        
         const formBody = {...formData,resume: files && files.length > 0 ? files[0]: null}
         const response = await axiosInstance.post("/Interview/generateInterview",formBody,{
             headers: {
@@ -86,6 +96,18 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
           value={formData.name}
           className='w-1/4'
           onChange={(e) => setFormData({...formData,name:e.target.value})}
+          disabled={disabled}
+          required
+        />
+        <p>Seconds per answer </p>
+         <Input
+          placeholder="0"
+          value={formData.secondsPerAnswer}
+          className='w-1/4'
+          type='number'
+          max={20000}
+          
+          onChange={(e) => setFormData({...formData,secondsPerAnswer:+e.target.value})}
           disabled={disabled}
           required
         />
@@ -127,10 +149,11 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     <Textarea disabled={disabled} onChange={(e)=> {setFormData({...formData,jobDescription:e.target.value})}}></Textarea>
     <p>Resume</p>
     <FileSelect disabled={disabled} files={files} setFiles={setFiles}></FileSelect>
-
-    {!disabled && <Button type='submit' className='mt-2' onClick={()=> {submitMutation.mutate()} }>Submit</Button>}
+    {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
+    {!disabled && <Button type='submit' className='mt-2' onClick={(e)=> {submitMutation.mutate(e)} }>Submit</Button>}
+    
          </form>
-         {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
+        
     </div> : <Spinner/>
   )
 }

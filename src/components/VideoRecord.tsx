@@ -11,11 +11,12 @@ interface VideoRecordProps {
   responseLoading: boolean,
   videoLink:string | null,
   setUnsavedVideo: (recording:boolean) => void,
-  question: string
+  question: string,
+  secondsPerAnswer:number
 
   
 }
-export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading,videoLink,setUnsavedVideo,question}:VideoRecordProps) {
+export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading,videoLink,setUnsavedVideo,question,secondsPerAnswer}:VideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const [hasVideo,setHasVideo] = useState(false)
@@ -23,11 +24,11 @@ export default function VideoRecord({recording,setRecording,setBlob,sendForRevie
   const mediaRecorder =  useRef<MediaRecorder | null>(null)
   const mediaStream = useRef<MediaStream | null>(null)
   const [firstRecording,setFirstRecording] = useState(false)
-  const TIMEOUT = 120*1000 // 2 minutes
+  const TIMEOUT = secondsPerAnswer * 1000
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [timeRemaining,setTimeRemaining] = useState(TIMEOUT/1000)
-  const [minutes,setMinutes] = useState("02")
-  const [seconds,setSeconds] = useState("00")
+  const [minutes,setMinutes] = useState(Math.floor(secondsPerAnswer / 60).toString().padStart(2, '0'))
+  const [seconds,setSeconds] = useState((secondsPerAnswer % 60).toString().padStart(2, '0'))
  
 
   const intervalId = useRef<NodeJS.Timeout | null>(null)

@@ -23,7 +23,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
         numberOfBehavioral++;
       }
     })
-    return {name:name,jobDescription:jobDescription,resume:null,numberOfTechnical:numberOfTechnical,numberOfBehavioral:numberOfBehavioral}
+    return {name:name,jobDescription:jobDescription,resume:null,numberOfTechnical:numberOfTechnical,numberOfBehavioral:numberOfBehavioral, secondsPerAnswer:interview.secondsPerAnswer}
   }
   const [showQuestions,setShowQuestions] = useState(false)
   const [initialData,setInitialData] = useState(convertInterviewToInitialData())
@@ -34,7 +34,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
     { !showQuestions ? 
     <div className='w-full'>
     <InterviewForm initialData={initialData} disabled={true}></InterviewForm> </div> :
-    <InterviewQuestions questionsProp={interview.questions} />
+    <InterviewQuestions secondsPerAnswer={interview.secondsPerAnswer} questionsProp={interview.questions} />
     }
     </div>
   )

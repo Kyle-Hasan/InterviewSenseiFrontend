@@ -10,10 +10,12 @@ import { useQuestionStore } from '@/app/hooks/useQuestions'
 
 
 interface interviewQuestionsProps {
-    questionsProp:question[]
+    questionsProp:question[],
+    secondsPerAnswer:number
+  
 }
 
-export const InterviewQuestions = ({questionsProp}:interviewQuestionsProps) => {
+export const InterviewQuestions = ({questionsProp,secondsPerAnswer}:interviewQuestionsProps) => {
    
   const [currentQuestionIndex,setCurrentQuestionIndex] = useState(0)
   const [unsavedVideo,setUnsavedVideo] = useState(false)
@@ -56,7 +58,7 @@ export const InterviewQuestions = ({questionsProp}:interviewQuestionsProps) => {
 </div>
 
         {questions && questions.length > 0 && 
-       <> <InterviewRecord setUnsavedVideo={setUnsavedVideo} question={questions[currentQuestionIndex]} disabled={false}></InterviewRecord>
+       <> <InterviewRecord secondsPerAnswer={secondsPerAnswer} setUnsavedVideo={setUnsavedVideo} question={questions[currentQuestionIndex]} disabled={false}></InterviewRecord>
         <PopupDialog open={dialogOpen} setOpen={setDialogOpen}  onConfirm={dialogConfirm} description={"Your response has not been saved, if you proceeed it will be lost"} title={"Unsaved response"}></PopupDialog></>}
         </div>
   )
