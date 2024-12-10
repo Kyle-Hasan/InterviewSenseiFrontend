@@ -52,13 +52,13 @@ export default function InterviewRecord({question,setUnsavedVideo,secondsPerAnsw
     let goodArr = feedbackArray[1].split("...")
     if(goodArr.length > 0) {
      goodArr[0] =  goodArr[0].replace("Good: ", "")
-     goodArr = goodArr.map(x => x.replace("$","")).filter(x=> x.length > 0)
+     goodArr = goodArr.map(x => x.replace("$","")).filter(x=> x.length > 10)
     }
     
     let badArr = feedbackArray[2].split("...")
     if(badArr.length > 0) {
       badArr[0] = badArr[0].replace("Needs Improvement: ","")
-      badArr = badArr.map(x => x.replace("$","")).filter(x=> x.length > 0)
+      badArr = badArr.map(x => x.replace("$","")).filter(x=> x.length > 1)
     }
     setReviewGood(goodArr)
     setReviewBad(badArr)

@@ -36,6 +36,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     const queryClient = useQueryClient()
     const {setInterview} = useInterviewStore()
 
+  
     
 
     const handleSubmit = async(e)=> {
@@ -84,7 +85,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
 
     const submitMutation = useMutation({
       mutationFn: handleSubmit,
-      onSuccess: ()=> {queryClient.invalidateQueries()}
+      onSuccess: ()=> {queryClient.invalidateQueries({queryKey:["interviews"]})}
     })
 
   return ( !loading ? <div className="flex flex-col items-center h-screen mt-5">
@@ -146,7 +147,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
       </SelectContent>
     </Select>
     <p>Job Description </p>
-    <Textarea disabled={disabled} onChange={(e)=> {setFormData({...formData,jobDescription:e.target.value})}}></Textarea>
+    <Textarea disabled={disabled} value={formData.jobDescription} onChange={(e)=> {setFormData({...formData,jobDescription:e.target.value})}}></Textarea>
     <p>Resume</p>
     <FileSelect disabled={disabled} files={files} setFiles={setFiles}></FileSelect>
     {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}

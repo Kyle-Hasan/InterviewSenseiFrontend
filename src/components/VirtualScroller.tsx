@@ -38,7 +38,7 @@ const VirtualScroller = ({refreshFunction,totalItems,numberRendered,children,lis
   return (
     
       <div
-        className="overflow-scroll h-1/3 w-auto space-y-4"
+        className="overflow-auto h-1/3 w-auto space-y-4"
         ref={divRef}
         onScroll={handleScroll}
       >

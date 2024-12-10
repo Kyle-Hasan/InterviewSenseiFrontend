@@ -58,7 +58,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
     setListLoading(true)
   
     const result = await queryClient.fetchQuery( {
-      queryKey: ['searchResults', searchText, dateSort, nameSort,index,pageSize],
+      queryKey: ['interviews', searchText, dateSort, nameSort,index,pageSize],
        queryFn: () => search(dateSort, nameSort, searchText),
        staleTime: 1000 * 60 * 5,
      }
@@ -123,7 +123,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
     try {
 
       const result = await queryClient.fetchQuery( {
-       queryKey: ['searchResults', searchText, dateSort, nameSort,index,pageSize],
+       queryKey: ['interviews', searchText, dateSort, nameSort,index,pageSize],
         queryFn: () => search(dateSort, nameSort, searchText),
         staleTime: 1000 * 60 * 5,
       }
@@ -231,12 +231,12 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
 
   const deleteMutation = useMutation({
     mutationFn: deleteItem,
-    onSuccess: ()=> {queryClient.invalidateQueries()}
+    onSuccess: ()=> {queryClient.invalidateQueries({queryKey:["interviews"]})}
   })
 
   const editMutation = useMutation({
     mutationFn: submitEdit,
-    onSuccess: ()=> {queryClient.invalidateQueries()}
+    onSuccess: ()=> {queryClient.invalidateQueries({queryKey:["interviews"]})}
   })
   const renderInterview = (item:interview)=> {
 
@@ -280,7 +280,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
         
     
           <div
-          className='h-auto overflow-scroll'
+          className='h-auto overflow-auto'
           >
             <VirtualScroller listLoading={listLoading} totalItems={totalInterviews} numberRendered={interviews.length} refreshFunction={getMoreInterviews}>
               {interviews.map(renderInterview)}

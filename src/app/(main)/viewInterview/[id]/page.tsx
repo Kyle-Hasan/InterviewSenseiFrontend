@@ -10,6 +10,7 @@ export async function fetchInterview(id:string) {
 
 
   const interviewResponse = await serverAxiosInstance.get("/Interview/"+id)
+  console.log(interviewResponse.data)
 
 
   return interviewResponse.data
@@ -21,6 +22,7 @@ export default  async function Page({ params: paramsPromise }: { params: Promise
   const {id} = await paramsPromise
   
   const interview = await fetchInterview(id)
+  
 
   
 

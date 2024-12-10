@@ -22,7 +22,7 @@ export default function MainLayout({
     <QueryClientProvider client={queryClient}>
      <SignalRProvider>
       <Navbar></Navbar>
-      <ReactQueryDevtools initialIsOpen={false} />
+      
         {children}
         </SignalRProvider>
         </QueryClientProvider>
