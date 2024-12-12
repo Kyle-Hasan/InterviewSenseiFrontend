@@ -2,13 +2,16 @@ import React, { useState } from 'react'
 interface fileSelectProps {
     files:File[],
     setFiles:(newValue:File[])=> void
-    disabled:boolean
+    disabled:boolean,
+    initialResumeUrl:string,
+    initialResumeName:string
 }
-export default function FileSelect({files,setFiles,disabled}:fileSelectProps) {
+export default function FileSelect({files,setFiles,disabled,initialResumeUrl,initialResumeName}:fileSelectProps) {
 
     
     const [error,setError] = useState("")
     const [dragging,setDragging] = useState(false)
+    const [resumeUrl,setResumeUrl] = useState()
 
     const handleDrop = (e: React.DragEvent<HTMLElement>)=> {
         setDragging(false)
@@ -36,10 +39,14 @@ export default function FileSelect({files,setFiles,disabled}:fileSelectProps) {
    }
 
    const eventToFile = (fileList:FileList)=> {
-    const files = Array.from(fileList)
+            const files = Array.from(fileList)
             const pdfFiles = files.filter(x=> x.type=== 'application/pdf')
             if(pdfFiles.length === 1) {
                 setFiles(pdfFiles)
+                const url = URL.createObjectURL(pdfFiles[0])
+                setResumeUrl(url)
+
+
             }
             else if(pdfFiles.length === 2) {
                 setFiles([pdfFiles[0]])
@@ -68,8 +75,9 @@ export default function FileSelect({files,setFiles,disabled}:fileSelectProps) {
         }
         {error.length > 0 && <p className='text-red-600'>{error}</p>}
         {files.length > 0 && <ul>
-            {files.map(x=> <li key={x.name}>{x.name}</li>)}
+            {files.map(x=> <li key={x.name}><a href={resumeUrl} target='_blank'  rel="noopener noreferrer" className='underline text-blue-500' >{x.name}</a></li>)}
             </ul>}
+        {files.length == 0 && initialResumeName && initialResumeUrl && <a href={initialResumeUrl} target='_blank'  rel="noopener noreferrer" className='underline text-blue-500'>{initialResumeName}</a>}
         </div>
   )
 }

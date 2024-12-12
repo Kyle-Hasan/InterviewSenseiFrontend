@@ -1,10 +1,10 @@
 import axios from "axios";
 import { NextResponse } from "next/server";
 
-
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5095/api", 
+  baseURL: apiUrl, 
   
   headers: {
     "Content-Type": "application/json", 
@@ -25,7 +25,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         const refreshResponse = await axios.get(
-          "http://localhost:5095/api/Auth/refreshToken",
+          apiUrl+"/refreshToken",
           
           { withCredentials: true }
         );

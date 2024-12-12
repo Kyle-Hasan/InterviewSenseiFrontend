@@ -27,7 +27,7 @@ export default  async function Page({ params: paramsPromise }: { params: Promise
   
 
   return (
-    <div >
+    <div className="mb-4" >
      <ViewInterviewClient interview={interview} />
     </div>
   );

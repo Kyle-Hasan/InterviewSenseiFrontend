@@ -19,20 +19,24 @@ interface interviewFormData {
     jobDescription:string,
     name:string,
     secondsPerAnswer:number,
-    additionalDescription:string
+    additionalDescription:string,
+    
 }
 
 interface interviewFormProps {
     initialData:interviewFormData,
+    initialResumeUrl:string,
+    initialResumeName:string,
     disabled:boolean
 }
 
-export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
+export const InterviewForm = ({initialData,disabled, initialResumeName, initialResumeUrl}:interviewFormProps) => {
     const [formData,setFormData] = useState<interviewFormData>(initialData)
     const [files,setFiles] = useState<File[]>([])
     const [loading,setLoading] = useState(false)
     const router = useRouter()
     const [errors,setErrors] = useState("")
+    
 
     const queryClient = useQueryClient()
     const {setInterview} = useInterviewStore()
@@ -153,7 +157,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     <p>Additional Description </p>
     <Textarea disabled={disabled} value={formData.additionalDescription} onChange={(e)=> {setFormData({...formData,additionalDescription:e.target.value})}}></Textarea>
     <p>Resume</p>
-    <FileSelect disabled={disabled} files={files} setFiles={setFiles}></FileSelect>
+    <FileSelect initialResumeName={initialResumeName} initialResumeUrl={initialResumeUrl} disabled={disabled} files={files} setFiles={setFiles}></FileSelect>
     {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
     {!disabled && <Button type='submit' className='mt-2' onClick={(e)=> {submitMutation.mutate(e)} }>Submit</Button>}
     

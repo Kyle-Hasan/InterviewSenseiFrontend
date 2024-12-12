@@ -266,7 +266,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
   }
 
   return (
-    <div className="flex items-center justify-center h-full flex-col mt-4 mb-4">
+    <div className="flex items-center justify-center h-full flex-col mt-4 mb-12 ">
       <h1 className="text-4xl font-bold mb-3 mt-5">Interviews</h1>
       <div></div>
       { !loading ? 
@@ -276,7 +276,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
           <Button onClick={()=> filterChangeName()}>Sort by name {nameSort === "ASC" ? <ArrowDown02Icon color='white'/> : nameSort === "DESC" && <ArrowUp02Icon color='white'/>  } </Button>
           <Input placeholder='Search by name' onChange={textSearchChange} value={searchText}></Input>
           </div>
-          <div className='h-full overflow-auto'>
+          <div className='h-full mb-4'>
         
     
           <div
