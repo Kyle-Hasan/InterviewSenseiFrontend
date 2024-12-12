@@ -20,7 +20,7 @@ import SignalRContext from '@/app/contexts/SignalRContext';
 
 
 
-export default function InterviewList({ initialInterviews,totalInterviewsProp }: { initialInterviews: interview[], totalInterviewsProp:number }) {
+export default function InterviewList({ initialInterviews,totalInterviewsProp,initialLoaded}: { initialInterviews: interview[], totalInterviewsProp:number, initialLoaded:number }) {
   const [interviews, setInterviews] = useState([...initialInterviews]);
   const signalRContext = useContext(SignalRContext)
  
@@ -29,7 +29,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
   const [editing,setEditing] = useState(false)
   const [editedValue,setEditedValue] = useState("")
   const [editingId,setEditingId] = useState(-1)
-  const [index,setIndex] = useState(0)
+  const [index,setIndex] = useState(initialLoaded ? initialLoaded : 10)
   const pageSize = 10
 
   const [searchText,setSearchText] = useState("")
@@ -65,7 +65,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
      );
    
   
-    setIndex(index+1)
+    setIndex(index+pageSize)
 
     const newInterviews = [...interviews,...result]
     
@@ -101,7 +101,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
 
     const response = await axiosInstance.get("/Interview/interviewList",{
       params: {
-        startIndex:0,
+        startIndex:index,
         pageSize:pageSize,
         ...(nameSort && nameSort.length && {nameSort} ),
         ...(dateSort && dateSort.length && {dateSort} ),
@@ -245,7 +245,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
       {editing && editingId === item.id ? <Input value={editedValue} onChange={editValueChange }></Input>    : <div className='text-center font-bold' onClick={()=> {navigateToInterview(item.id)}} >
         {item.name}
         </div> }
-        <div className='mt-1 mb-1 text-center'>
+        <div className='my-1 mx-1 text-center'>
           {item.createdDate}
         </div>
         <div className='flex space-x-2 justify-center items-center'>
@@ -266,21 +266,21 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp }:
   }
 
   return (
-    <div className="flex items-center justify-center h-100 flex-col mt-4 mb-4">
-      <h1 className="text-4xl font-bold mb-3">Interviews</h1>
+    <div className="flex items-center justify-center h-full flex-col mt-4 mb-4">
+      <h1 className="text-4xl font-bold mb-3 mt-5">Interviews</h1>
       <div></div>
       { !loading ? 
-        <div>
+        <div className='h-full'>
          <div className='flex flex-row items-center justify-center space-x-4'>
           <Button onClick={()=> filterChangeDate()}>Sort by date {dateSort === "ASC" ? <ArrowDown02Icon color='white'/> : dateSort === "DESC" && <ArrowUp02Icon color='white'/>  } </Button>
           <Button onClick={()=> filterChangeName()}>Sort by name {nameSort === "ASC" ? <ArrowDown02Icon color='white'/> : nameSort === "DESC" && <ArrowUp02Icon color='white'/>  } </Button>
           <Input placeholder='Search by name' onChange={textSearchChange} value={searchText}></Input>
           </div>
-          <div className='h-auto overflow-auto'>
+          <div className='h-full overflow-auto'>
         
     
           <div
-          className='h-auto overflow-auto'
+          className='h-full overflow-scroll'
           >
             <VirtualScroller listLoading={listLoading} totalItems={totalInterviews} numberRendered={interviews.length} refreshFunction={getMoreInterviews}>
               {interviews.map(renderInterview)}

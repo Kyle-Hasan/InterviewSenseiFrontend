@@ -18,7 +18,8 @@ interface interviewFormData {
     numberOfTechnical:number,
     jobDescription:string,
     name:string,
-    secondsPerAnswer:number
+    secondsPerAnswer:number,
+    additionalDescription:string
 }
 
 interface interviewFormProps {
@@ -59,6 +60,7 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
       }
       try {
         setLoading(true)
+       
         // add form validation here
         
         const formBody = {...formData,resume: files && files.length > 0 ? files[0]: null}
@@ -148,6 +150,8 @@ export const InterviewForm = ({initialData,disabled}:interviewFormProps) => {
     </Select>
     <p>Job Description </p>
     <Textarea disabled={disabled} value={formData.jobDescription} onChange={(e)=> {setFormData({...formData,jobDescription:e.target.value})}}></Textarea>
+    <p>Additional Description </p>
+    <Textarea disabled={disabled} value={formData.additionalDescription} onChange={(e)=> {setFormData({...formData,additionalDescription:e.target.value})}}></Textarea>
     <p>Resume</p>
     <FileSelect disabled={disabled} files={files} setFiles={setFiles}></FileSelect>
     {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}

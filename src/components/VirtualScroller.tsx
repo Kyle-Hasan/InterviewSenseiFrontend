@@ -26,7 +26,7 @@ const VirtualScroller = ({refreshFunction,totalItems,numberRendered,children,lis
     
 
     const reachedBottom = divRef.current && divRef.current.scrollHeight > divRef.current.clientHeight + divRef.current.scrollTop
-    
+  
     if(reachedBottom && totalItems > numberRendered) { 
         
         await refreshFunction()
@@ -38,7 +38,7 @@ const VirtualScroller = ({refreshFunction,totalItems,numberRendered,children,lis
   return (
     
       <div
-        className="overflow-auto h-1/3 w-auto space-y-4"
+        className="overflow-auto h-full  w-auto space-y-4 mx-1 flex flex-col items-center"
         ref={divRef}
         onScroll={handleScroll}
       >

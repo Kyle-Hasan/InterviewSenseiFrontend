@@ -14,7 +14,8 @@ export interface interview {
     jobDescription:string,
     resumeLink:string,
     createdDate:string
-    secondsPerAnswer:number
+    secondsPerAnswer:number,
+    additionalDescription:string
     
 }
 

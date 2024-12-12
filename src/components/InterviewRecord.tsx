@@ -122,14 +122,14 @@ export default function InterviewRecord({question,setUnsavedVideo,secondsPerAnsw
       
       <>
       <div className='mb-2 mt-1'>
-      <h3 className='font-bold text-center underline mb-2'>Your Response</h3>
-      <p>{response}</p>
+      <h3 className='font-bold text-center underline mb-2 '>Your Response</h3>
+      <p className='w-full break-normal'>{response}</p>
       </div>
       {reviewGood && reviewGood.length > 0 && (
         <div className='w-full'>
           <h3 className='font-bold text-center underline mb-2'>Good</h3>
           <ul className='list-disc pl-5 space-y-1'>
-            {reviewGood.map(x => <li key={x}>{x}</li>)}
+            {reviewGood.map(x => <li className='break-normal' key={x}>{x}</li>)}
           </ul>
         </div>
       )}
@@ -138,7 +138,7 @@ export default function InterviewRecord({question,setUnsavedVideo,secondsPerAnsw
         <div className='w-full mt-4'>
           <h3 className='font-bold text-center underline mb-2'>Bad</h3>
           <ul className='list-disc pl-5 space-y-1'>
-            {reviewBad.map(x => <li key={x}>{x}</li>)}
+            {reviewBad.map(x => <li className='break-normal' key={x}>{x}</li>)}
           </ul>
         </div>
       )}

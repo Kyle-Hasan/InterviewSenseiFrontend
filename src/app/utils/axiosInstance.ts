@@ -9,7 +9,10 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json", 
   },
+  maxContentLength: 100000000,
+  maxBodyLength: 1000000000,
   withCredentials: true,
+  timeout: 30*1000
 });
 
 axiosInstance.interceptors.response.use(
