@@ -30,7 +30,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
   
   const [showQuestions,setShowQuestions] = useState(false)
   const [initialData,setInitialData] = useState(convertInterviewToInitialData())
-  const convertUrlToName = (pdfUrl)=> {
+  const convertUrlToName = (pdfUrl:string)=> {
     const serverUrlCut = interview.resumeLink.replace(apiUrl+"/Interview/getPdf/","")
     return serverUrlCut.substring(serverUrlCut.indexOf("_")+1)
   }

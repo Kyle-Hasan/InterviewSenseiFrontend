@@ -1,12 +1,5 @@
-export interface question {
-    body:string,
-    response:string,
-    type:string,
-    feedback:string,
-    videoLink:string,
-    id:number
-}
 
+import { question } from "./question"
 export interface interview {
     id:number,
     questions:question[]

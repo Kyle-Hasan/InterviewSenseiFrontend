@@ -11,12 +11,12 @@ import { question } from '@/app/types/question'
 
 
 interface interviewQuestionsProps {
-    questionsProp:question[],
+    question:question,
     secondsPerAnswer:number
   
 }
 
-export const InterviewQuestions = ({questionsProp,secondsPerAnswer}:interviewQuestionsProps) => {
+export const InterviewQuestions = ({question,secondsPerAnswer}:interviewQuestionsProps) => {
    
   const [currentQuestionIndex,setCurrentQuestionIndex] = useState(0)
   const [unsavedVideo,setUnsavedVideo] = useState(false)

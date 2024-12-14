@@ -7,7 +7,7 @@ interface VideoRecordProps {
   setBlob: (blob:Blob)=> void,
   recording: boolean
   setRecording: (recording:boolean) => void,
-  sendForReview: ()=> void,
+  sendForReview: Function,
   responseLoading: boolean,
   videoLink:string | null,
   setUnsavedVideo: (recording:boolean) => void,
@@ -86,7 +86,7 @@ useEffect(()=> {
   
     
   }
-}, [question])
+}, [question,videoLink])
 
 
 
