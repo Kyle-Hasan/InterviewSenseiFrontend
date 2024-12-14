@@ -28,7 +28,7 @@ export const Navbar = () => {
   }
 
   return (
-    <nav className="flex items-center justify-between bg-black text-white p-4 mb-4">
+    <nav className="flex items-center justify-between bg-black text-white p-4 mb-4 sticky top-0">
       
       <div className="hidden md:flex space-x-4">
         <div className="text-lg font-bold">

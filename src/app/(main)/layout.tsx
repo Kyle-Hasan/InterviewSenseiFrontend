@@ -13,19 +13,30 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
 
-  const queryClient =  new QueryClient(); 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 10, // 10 minutes
+      },
+    },
+  });
+
+  
   
   
   return (
     
       <>
+    
     <QueryClientProvider client={queryClient}>
-     <SignalRProvider>
-      <Navbar></Navbar>
-      
-        {children}
-        </SignalRProvider>
-        </QueryClientProvider>
+
+  <SignalRProvider>
+    <Navbar />
+    {children}
+  </SignalRProvider>
+</QueryClientProvider>
+
+        
         
     
         </>

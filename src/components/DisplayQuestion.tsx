@@ -10,18 +10,19 @@ import { question } from '@/app/types/question'
 
 
 
-interface interviewQuestionsProps {
+interface DisplayQuestionProps {
     question:question,
     secondsPerAnswer:number
   
 }
 
-export const InterviewQuestions = ({question,secondsPerAnswer}:interviewQuestionsProps) => {
+export const DisplayQuestion = ({questionId,secondsPerAnswer}:DisplayQuestionProps) => {
    
-  const [currentQuestionIndex,setCurrentQuestionIndex] = useState(0)
+  
   const [unsavedVideo,setUnsavedVideo] = useState(false)
   const [dialogOpen,setDialogOpen] = useState(false)
   const setQuestions = useQuestionStore((state)=> state.setQuestion)
+  const [question,setQuestion] = useState<question>()
   
 
   const questions = useQuestionStore((state)=> state.questions)
@@ -37,7 +38,7 @@ export const InterviewQuestions = ({question,secondsPerAnswer}:interviewQuestion
       setDialogOpen(true);
       const confirmFunction = (e) => {
         ;
-        setCurrentQuestionIndex(currentQuestionIndex + offset);
+       
         setUnsavedVideo(false);
         setDialogOpen(false);
       };
@@ -45,7 +46,7 @@ export const InterviewQuestions = ({question,secondsPerAnswer}:interviewQuestion
     }
     
     else {
-      setCurrentQuestionIndex(currentQuestionIndex+offset)
+ 
       setUnsavedVideo(false)
     }
   }

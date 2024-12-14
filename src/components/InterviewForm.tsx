@@ -36,6 +36,7 @@ export const InterviewForm = ({initialData,disabled, initialResumeName, initialR
     const [loading,setLoading] = useState(false)
     const router = useRouter()
     const [errors,setErrors] = useState("")
+   
     
 
     const queryClient = useQueryClient()
@@ -75,9 +76,16 @@ export const InterviewForm = ({initialData,disabled, initialResumeName, initialR
           });
          
         const data:interview = response.data
+        let questions = data.questions
+        questions =questions.sort((a,b)=> a.id-b.id)
         setInterview(data)
         setLoading(false)
-        router.push("/interviewQuestions/"+data.id)
+        for(let i = 0; i < questions.length;i++) {
+          const question = questions[i]
+          queryClient.setQueryData(["questions",question.id],question)
+          queryClient.setQueryData(["responses",question.id],[])
+        }
+        router.push("/questions/"+questions[0].id)
       }
       catch(e) {
         setErrors("Errors : " + e)

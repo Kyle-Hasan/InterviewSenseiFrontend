@@ -5,5 +5,9 @@ export interface question {
     responses: response[]
     type:string,
    
-    id:number
+    id:number,
+    interviewId:number,
+    secondsPerAnswer:number,
+    nextQuestionId ?: number,
+    previousQuestionId ?: number
 }
