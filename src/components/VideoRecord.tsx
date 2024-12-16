@@ -228,7 +228,7 @@ useEffect(()=> {
         </>
       ) : (
         <div className='flex flex-row space-x-4'>
-          {firstRecording && <Button  onClick={sendForReview} disabled={responseLoading}>Send for review</Button>}
+          {firstRecording && <Button  onClick={(e)=> {sendForReview()}} disabled={responseLoading}>Send for review</Button>}
         <Button onClick={startRecording} disabled={responseLoading}>Start Recording</Button>
         </div>
       )

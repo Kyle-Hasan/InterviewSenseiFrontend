@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { question } from '../types/interview'
+import { question } from '../types/question';
 
 
 interface QuestionState {

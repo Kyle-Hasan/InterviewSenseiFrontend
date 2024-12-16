@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { interview } from '@/app/types/interview';
@@ -221,7 +222,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
     setEditing(false)
   }
 
-  const editValueChange = (e) => {
+  const editValueChange = (e:any) => {
     setEditedValue(e.target.value)
   }
 
@@ -259,7 +260,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
     
 
   }
-  const textSearchChange = (e)=> {
+  const textSearchChange = (e:any)=> {
     const newValue = e.target.value;
     setSearchText(newValue)
     updateDebouncedValue(newValue)

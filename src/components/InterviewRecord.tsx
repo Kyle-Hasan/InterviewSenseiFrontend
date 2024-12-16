@@ -44,7 +44,7 @@ export default function InterviewRecord({question,setUnsavedVideo,secondsPerAnsw
     const data:response = response.data
     convertToGoodAndBad(data.feedback)
     setAnswer(data.answer)
-    updateQuestion(data)
+    
    
     return data;
   }
@@ -63,7 +63,7 @@ export default function InterviewRecord({question,setUnsavedVideo,secondsPerAnsw
 }
 
   const postUpdate =()=> {
-    setSelectedResponseIndex(responses?.length)
+    setSelectedResponseIndex(responses && responses.length ? responses.length : 0)
 
   }
 
@@ -73,7 +73,7 @@ export default function InterviewRecord({question,setUnsavedVideo,secondsPerAnsw
   const [recording,setRecording] = useState(false)
   const [loadingResponse,setLoadingResponse] = useState(false)
   const [answer,setAnswer] = useState("")
-  const updateQuestion = useQuestionStore((state)=> state.updateQuestion)
+
   const {isLoading,isError,responses,addResponse} = useResponses(question.id,() => {return sendForReview(question)},postUpdate)
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(0);
   

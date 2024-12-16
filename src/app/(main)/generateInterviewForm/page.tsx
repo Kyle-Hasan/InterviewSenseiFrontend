@@ -11,9 +11,10 @@ export default function generateInterviewForms() {
       numberOfTechnical:0,
       jobDescription:"",
       name: "",
-      secondsPerAnswer:120
+      secondsPerAnswer:120,
+      additionalDescription:""
     }
   
-  return ( <InterviewForm initialData={initialData} disabled={false}></InterviewForm>
+  return ( <InterviewForm initialResumeUrl="" initialResumeName="" initialData={initialData} disabled={false}></InterviewForm>
   )
 }

@@ -22,7 +22,7 @@ export const useResponses = (questionId: number, sendForReviewFn:Function, postU
   const addResponse = useMutation({
    mutationFn: async () => {
     const newResponse = await sendForReviewFn();
-    debugger
+   
     return newResponse;
     },
       onSuccess: (newResponse:response) => {

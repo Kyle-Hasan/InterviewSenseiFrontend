@@ -53,7 +53,7 @@ const [unsavedVideo,setUnsavedVideo] = useState(false)
     window.scrollTo(0, 0); 
   }, [pathname]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [dialogConfirm,setDialogConfirm] = useState((e:any)=> {console.log(e)})
+  const [dialogConfirm,setDialogConfirm] = useState<(e: any) => void>((e:any)=> {console.log(e)})
   const changeQuestion = (offset:number) => {
     const navigateAway = ()=> {
         if(offset == 1) {

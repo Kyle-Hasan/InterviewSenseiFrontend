@@ -30,12 +30,12 @@ export const InterviewQuestions = ({questionsProp,secondsPerAnswer}:interviewQue
     setQuestions(questionsProp)
   } , [questionsProp,setQuestions])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [dialogConfirm,setDialogConfirm] = useState((e:any)=> {console.log(e)})
+  const [dialogConfirm,setDialogConfirm] = useState<(e: any) => any>((e:any)=> {console.log(e)})
   const changeQuestion = (offset:number) => {
     ;
     if (unsavedVideo) {
       setDialogOpen(true);
-      const confirmFunction = (e) => {
+      const confirmFunction = () => {
         ;
         setCurrentQuestionIndex(currentQuestionIndex + offset);
         setUnsavedVideo(false);

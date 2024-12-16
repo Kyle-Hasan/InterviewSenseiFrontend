@@ -11,7 +11,7 @@ export default function FileSelect({files,setFiles,disabled,initialResumeUrl,ini
     
     const [error,setError] = useState("")
     const [dragging,setDragging] = useState(false)
-    const [resumeUrl,setResumeUrl] = useState()
+    const [resumeUrl,setResumeUrl] = useState<string>("")
 
     const handleDrop = (e: React.DragEvent<HTMLElement>)=> {
         setDragging(false)

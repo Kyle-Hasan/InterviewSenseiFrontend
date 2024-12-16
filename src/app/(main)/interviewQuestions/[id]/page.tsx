@@ -13,7 +13,8 @@ import Spinner from '@/components/Spinner';
 
 export default  function InterviewPage() {
   const obj=  useParams<{ id:string }>();
-  
+
+ 
   const [loading,setLoading] = useState(false)
   const [interview,setInterview] = useState<interview | null>(null)
   const storedValue = useInterviewStore()
@@ -44,8 +45,8 @@ export default  function InterviewPage() {
       }
       else {
         const response = await queryClient.fetchQuery( {
-          queryKey: ['interview',obj.id],
-           queryFn: () => fetchInterview(obj.id),
+          queryKey: ['interview',obj?.id],
+           queryFn: () => fetchInterview(obj && obj.id ? obj.id : "-1"),
            staleTime: 1000 * 60 * 5,
          }
          );

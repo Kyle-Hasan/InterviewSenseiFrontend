@@ -5,7 +5,7 @@ import { interview } from "../../../types/interview";
 import ViewInterviewClient from "@/components/viewInterviewClient";
 import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
 
-export async function fetchInterview(id:string) {
+async function fetchInterview(id:string) {
   
 
 

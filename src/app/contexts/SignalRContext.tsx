@@ -41,7 +41,7 @@ export const SignalRProvider = ({ children }: {children:React.ReactNode}) => {
             await connection.start();
             connection.on("entitiesUpdated", (entityType, message) => {
                 console.log(`Received Notification for ${entityType}: ${message}`);
-                queryClient.invalidateQueries([entityType]);
+                queryClient.invalidateQueries({queryKey:[entityType]});
             });
             connectionsRef.current.set(connectionKey, connection); 
         } catch (err) {
