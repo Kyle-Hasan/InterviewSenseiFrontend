@@ -60,7 +60,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
   
     const result = await queryClient.fetchQuery( {
       queryKey: ['interviews', searchText, dateSort, nameSort,index,pageSize],
-       queryFn: () => search(dateSort, nameSort, searchText),
+       queryFn: () => search(dateSort, nameSort, searchText,index),
        staleTime: 1000 * 60 * 5,
      }
      );
@@ -96,13 +96,13 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
   } , [])
 
 
-  const search = async(dateSort:string,nameSort:string,searchText:string)=> {
+  const search = async(dateSort:string,nameSort:string,searchText:string,startIndex:number)=> {
     
   
 
     const response = await axiosInstance.get("/Interview/interviewList",{
       params: {
-        startIndex:index,
+        startIndex:startIndex,
         pageSize:pageSize,
         ...(nameSort && nameSort.length && {nameSort} ),
         ...(dateSort && dateSort.length && {dateSort} ),
@@ -122,10 +122,11 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
   const handleSearch = async(dateSort:string,nameSort:string,searchText:string) => {
     setLoading(true)
     try {
+      
 
       const result = await queryClient.fetchQuery( {
-       queryKey: ['interviews', searchText, dateSort, nameSort,index,pageSize],
-        queryFn: () => search(dateSort, nameSort, searchText),
+       queryKey: ['interviews', searchText, dateSort, nameSort,0,pageSize],
+        queryFn: () => search(dateSort, nameSort, searchText,0),
         staleTime: 1000 * 60 * 5,
       }
       );
@@ -167,6 +168,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
   }
 
   const filterChangeName= ()=> {
+   
     let sendVar = ""
     if(nameSort === "ASC") {
       setNameSort("DESC")
@@ -281,7 +283,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
         
     
           <div
-          className='h-full overflow-scroll'
+          className='h-full overflow-auto'
           >
             <VirtualScroller listLoading={listLoading} totalItems={totalInterviews} numberRendered={interviews.length} refreshFunction={getMoreInterviews}>
               {interviews.map(renderInterview)}

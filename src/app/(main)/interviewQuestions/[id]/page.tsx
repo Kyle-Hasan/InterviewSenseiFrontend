@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/app/utils/axiosInstance';
-import { InterviewQuestions } from '@/components/interviewQuestions';
+import { InterviewQuestions } from '@/components/InterviewQuestions';
 import { useEffect, useState } from 'react';
 import { useInterviewStore } from '@/app/hooks/useInterviews';
 import { interview } from '@/app/types/interview';

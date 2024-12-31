@@ -76,17 +76,17 @@ export const InterviewForm = ({initialData,disabled, initialResumeName, initialR
             }
           });
          
-        const data:interview = response.data
-        let questions = data.questions
+        const interview:interview = response.data
+        let questions = interview.questions
         questions =questions.sort((a,b)=> a.id-b.id)
-        setInterview(data)
+        setInterview(interview)
         setLoading(false)
         for(let i = 0; i < questions.length;i++) {
           const question = questions[i]
           queryClient.setQueryData(["questions",question.id],question)
           queryClient.setQueryData(["responses",question.id],[])
         }
-        router.push("/questions/"+questions[0].id)
+        router.replace(`/interviews/${interview.id}/questions/${interview.questions[0].id}`)
       }
       catch(e) {
         setErrors("Errors : " + e)
@@ -115,7 +115,7 @@ export const InterviewForm = ({initialData,disabled, initialResumeName, initialR
           disabled={disabled}
           required
         />
-        <p>Seconds per answer </p>
+        <p>Max seconds per answer</p>
          <Input
           placeholder="0"
           value={formData.secondsPerAnswer}

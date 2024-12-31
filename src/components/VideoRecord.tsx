@@ -212,7 +212,7 @@ useEffect(()=> {
       <h2 className="text-2xl font-bold mb-3">Preview</h2>
       {
         hasVideo || (videoLink && videoLink.length > 0) ?
-      <video className="lg:size-4/5 sm:size-auto" ref={videoRef} autoPlay controls muted></video> : <p className='text'>Press start recording to show video</p>
+      <video className="lg:size-4/5 sm:size-auto" ref={videoRef} controls muted></video> : <p className='text'>Press start recording to show video</p>
         }
       <br />
 

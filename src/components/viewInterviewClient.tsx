@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { InterviewQuestions } from './interviewQuestions'
+import { InterviewQuestions } from './InterviewQuestions'
 import { interview } from '@/app/types/interview'
 import { InterviewForm } from './InterviewForm'
 import { Button } from './ui/button'
@@ -40,7 +40,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
 
   const goToQuestions = ()=> {
    
-    router.replace("/questions/"+interview.questions[0].id)
+    router.replace(`/interviews/${interview.id}/questions/${interview.questions[0].id}`)
   }
   return (
     <div className='flex flex-col h-full items-center justify-center'>

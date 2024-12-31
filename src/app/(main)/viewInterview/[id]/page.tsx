@@ -2,7 +2,7 @@
 
 
 import { interview } from "../../../types/interview";
-import ViewInterviewClient from "@/components/viewInterviewClient";
+import ViewInterviewClient from "@/components/ViewInterviewClient";
 import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
 
 async function fetchInterview(id:string) {
