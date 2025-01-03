@@ -82,7 +82,7 @@ export default function InterviewList({ initialInterviews,totalInterviewsProp,in
   }
 
   }
-
+  // make signal r connection to interview hub on backend to invalidate interview cache when its outdated 
   useEffect(()=> {
     const connect = async()=> {
      await signalRContext?.createConnection("/hubs/interview","interview")

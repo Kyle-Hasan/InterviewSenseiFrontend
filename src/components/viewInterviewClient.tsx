@@ -31,7 +31,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
     return {name:name,jobDescription:jobDescription,resume:null,numberOfTechnical:numberOfTechnical,numberOfBehavioral:numberOfBehavioral, secondsPerAnswer:interview.secondsPerAnswer,additionalDescription}
   }
   
-  
+  // create link to view resume if it exists
   const [initialData,setInitialData] = useState(convertInterviewToInitialData())
   const convertUrlToName = (pdfUrl:string)=> {
     const serverUrlCut = interview.resumeLink.replace(apiUrl+"/Interview/getPdf/","")

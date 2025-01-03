@@ -23,6 +23,7 @@ const VirtualScroller = ({refreshFunction,totalItems,numberRendered,children,lis
 
 
   const handleScroll = async()=> {
+    // when you reach the bottom of the pages, its time to load more
 
     const reachedBottom = divRef.current && divRef.current.scrollHeight > divRef.current.clientHeight + divRef.current.scrollTop
  

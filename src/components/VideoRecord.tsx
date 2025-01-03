@@ -18,12 +18,13 @@ interface VideoRecordProps {
 }
 export default function VideoRecord({recording,setRecording,setBlob,sendForReview, responseLoading,videoLink,setUnsavedVideo,question,secondsPerAnswer}:VideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+  // this so that we can differientiate between the first recording and the subsequent ones
   const [hasVideo,setHasVideo] = useState(false)
   
   const mediaRecorder =  useRef<MediaRecorder | null>(null)
   const mediaStream = useRef<MediaStream | null>(null)
   const [firstRecording,setFirstRecording] = useState(false)
+  // max time for recording in milliseconds
   const TIMEOUT = secondsPerAnswer * 1000
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [timeRemaining,setTimeRemaining] = useState(TIMEOUT/1000)
@@ -91,14 +92,17 @@ useEffect(()=> {
 
 
   const handleStream = async(stream:MediaStream)=> {
+    
     mediaRecorder.current = new MediaRecorder(stream as MediaStream)
+    // uses events from mediaRecorder.current to function
     if(mediaRecorder.current) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data:any[] = []
+      
         mediaRecorder.current.ondataavailable = (event) => data.push(event.data)
   
         mediaRecorder.current.start()
-  
+        // when the onstop event is fired, resolve, if theres an error reject. 
         const stopped = new Promise((resolve, reject) => {
             if(mediaRecorder.current) {
             mediaRecorder.current.onstop = resolve;
@@ -121,7 +125,7 @@ useEffect(()=> {
           }, 1000);
       
           
-
+          // force stop recording after maximum time as specified by timeout
 
          timeoutId.current = setTimeout(()=> {
 
@@ -135,7 +139,7 @@ useEffect(()=> {
           }, TIMEOUT )
           
         
-          
+          // wait until its stopped
           await stopped;
          
           return data;
@@ -169,7 +173,7 @@ useEffect(()=> {
 
       const recordedChunks = await handleStream(mediaStream.current);
       
-
+      // make file for video
       if (videoRef.current&& recordedChunks) {
         const recordedBlob = convertDataToBlob(recordedChunks)
         
