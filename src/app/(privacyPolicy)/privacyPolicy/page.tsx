@@ -21,10 +21,11 @@ import {Navbar} from '@/components/Navbar';
         <p className="mt-2">
           Interview Sensei ("the App") is committed to protecting your privacy.
           This Privacy Policy explains how we collect, use, and safeguard your
-          information when you use our services.
+          information when you use the App. By using the App, you consent to the collection and use of your information in accordance with this Privacy Policy. 
+          If you do not agree with the terms of this Privacy Policy, please do not use the App.
         </p>
 
-        <h3 className="text-lg font-semibold mt-4">1. Information We Collect</h3>
+        <h3 className="text-lg font-semibold mt-4">1. Information We Collect (all voluntarily provided)</h3>
         <ul className="list-disc pl-6">
           <li>
             Account Information: Usernames, passwords, and email addresses
@@ -45,6 +46,7 @@ import {Navbar} from '@/components/Navbar';
           <li>Generating interview questions and AI-based feedback.</li>
           <li>Storing and managing your interview history.</li>
           <li>Enhancing the performance and user experience of the App.</li>
+          <li>We do not sell, rent, or share your information with third parties for marketing purposes.</li>
         </ul>
 
         <h3 className="text-lg font-semibold mt-4">3. Third-Party Services</h3>

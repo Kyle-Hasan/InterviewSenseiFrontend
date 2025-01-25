@@ -60,8 +60,8 @@ export const InterviewForm = ({initialData,disabled, initialResumeName, initialR
         setErrors("Interview needs a name")
         return
       }
-      if(formData.secondsPerAnswer >= 20000 || formData.secondsPerAnswer < 10) {
-        setErrors("Seconds per answer must be between 10 and 20000 ")
+      if(formData.secondsPerAnswer >= 300 || formData.secondsPerAnswer < 10) {
+        setErrors("Seconds per answer must be between 10 and 300 ")
         return
       }
       try {
