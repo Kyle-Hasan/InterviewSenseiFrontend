@@ -1,16 +1,31 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { InterviewQuestions } from './InterviewQuestions'
 import { interview } from '@/app/types/interview'
 import { InterviewForm } from './InterviewForm'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
+import axiosInstance from '@/app/utils/axiosInstance'
 interface ViewInterviewClientProps {
   interview:interview
 }
 const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  console.log(interview)
+  const [resumeUrl,setResumeUrl] = useState("")
+
+  useEffect(()=> {
+    // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
+    const getResumeUrl = async ()=> {
+      if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true" && interview.resumeLink) {
+        const response = await axiosInstance.get(interview.resumeLink);
+        setResumeUrl(response.data.result)
+      } else {
+        setResumeUrl(interview.resumeLink);
+      }
+  }
+  getResumeUrl()
+  },[interview.resumeLink])
+  
   const router = useRouter()
   const convertInterviewToInitialData = ()=> {
     const name = interview.name
@@ -33,10 +48,13 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
   
   // create link to view resume if it exists
   const [initialData,setInitialData] = useState(convertInterviewToInitialData())
-  const convertUrlToName = (pdfUrl:string)=> {
+  // get the name of the resume from the url
+  const convertUrlToName = ()=> {
     const serverUrlCut = interview.resumeLink.replace(apiUrl+"/Interview/getPdf/","")
     return serverUrlCut.substring(serverUrlCut.indexOf("_")+1)
   }
+
+  
 
   const goToQuestions = ()=> {
    
@@ -48,7 +66,7 @@ const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
     <Button onClick={()=> {goToQuestions()}} className="ml-4 m-2">{ "Go to Questions"} </Button>
 
     <div className='w-full'>
-    <InterviewForm initialResumeUrl={interview.resumeLink} initialResumeName={interview.resumeLink ? convertUrlToName(interview.resumeLink): ""}  initialData={initialData} disabled={true}></InterviewForm> </div>
+    <InterviewForm initialResumeUrl={resumeUrl} initialResumeName={interview.resumeLink ? convertUrlToName(): ""}  initialData={initialData} disabled={true}></InterviewForm> </div>
  
     
     </div>
