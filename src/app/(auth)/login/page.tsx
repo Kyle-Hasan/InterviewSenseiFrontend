@@ -38,7 +38,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center h-[92%]">
       <form onSubmit={handleSubmit} className="space-y-4 w-80 p-6 bg-white shadow rounded">
         <h1 className="text-2xl font-bold">Login</h1>
         <Input
