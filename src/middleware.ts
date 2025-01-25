@@ -4,7 +4,7 @@ import axiosInstance from "./app/utils/axiosInstance";
 
 export function middleware(request: NextRequest) {
     
-    const publicRoutes = ["/login", "/signup"];
+    const publicRoutes = ["/login", "/signup", "/privacyPolicy"];
 
     const currentPath = request.nextUrl.pathname;
 

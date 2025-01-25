@@ -8,6 +8,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
+import Footer from "@/components/Footer";
 
 
 const geistSans = localFont({
@@ -46,8 +47,9 @@ export default function RootLayout({
       <AuthProvider>
         {children}
         </AuthProvider>
-     
-       
+      <div>
+       <Footer/>
+       </div>
       </body>
     </html>
   );

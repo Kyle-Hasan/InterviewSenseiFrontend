@@ -45,6 +45,8 @@ serverAxiosInstance.interceptors.response.use(
           return serverAxiosInstance(originalRequest);
         }
       } catch (refreshError) {
+
+      console.log("hit server axios instance")
        
         if (typeof window !== "undefined") {
           window.location.href = "/login";
