@@ -1,9 +1,14 @@
 
+import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
 import { InterviewForm } from "@/components/InterviewForm"
+// get the latest resume of the user to display if they have any
+async function getUserLatestResume() {
+  const response = await serverAxiosInstance.get("/Interview/getLatestResume");
+  
+  return response.data;
+}
 
-
-
-export default function generateInterviewForms() {
+export default async function generateInterviewForms() {
     
     const initialData = {
       resume:null,
@@ -14,7 +19,13 @@ export default function generateInterviewForms() {
       secondsPerAnswer:120,
       additionalDescription:""
     }
+
+    
+
+    const resumeUrlAndName = await getUserLatestResume();
+
+    
   
-  return ( <InterviewForm initialResumeUrl="" initialResumeName="" initialData={initialData} disabled={false}></InterviewForm>
+  return ( <InterviewForm initialResumeUrl={resumeUrlAndName.url} initialResumeName={resumeUrlAndName.fileName} initialData={initialData} disabled={false}></InterviewForm>
   )
 }
