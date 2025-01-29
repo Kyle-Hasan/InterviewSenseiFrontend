@@ -39,18 +39,16 @@ export default function RootLayout({
   
   
   return (
-    <html lang="en">
+    <html className="" lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="h-100 flex flex-col"
       >
        
       <AuthProvider>
         {children}
         <Footer/>
         </AuthProvider>
-      <div>
-       
-       </div>
+      
       </body>
     </html>
   );

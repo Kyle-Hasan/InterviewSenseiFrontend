@@ -1,76 +1,102 @@
-'use client'
-import React, { useEffect, useState } from 'react'
-import { InterviewQuestions } from './InterviewQuestions'
-import { interview } from '@/app/types/interview'
-import { InterviewForm } from './InterviewForm'
-import { Button } from './ui/button'
-import { useRouter } from 'next/navigation'
-import axiosInstance from '@/app/utils/axiosInstance'
+"use client";
+import React, { useEffect, useState } from "react";
+import { InterviewQuestions } from "./InterviewQuestions";
+import { interview } from "@/app/types/interview";
+import { InterviewForm } from "./InterviewForm";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
+import axiosInstance from "@/app/utils/axiosInstance";
 interface ViewInterviewClientProps {
-  interview:interview
+  interview: interview;
 }
-const ViewInterviewClient = ({interview}:ViewInterviewClientProps) => {
+const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const [resumeUrl,setResumeUrl] = useState("")
+  const [resumeUrl, setResumeUrl] = useState("");
 
-  useEffect(()=> {
+  useEffect(() => {
     // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
-    const getResumeUrl = async ()=> {
-      if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true" && interview.resumeLink) {
+    const getResumeUrl = async () => {
+      if (
+        process.env.NEXT_PUBLIC_SIGNED_URLS === "true" &&
+        interview.resumeLink
+      ) {
         const response = await axiosInstance.get(interview.resumeLink);
-        setResumeUrl(response.data.result)
+        setResumeUrl(response.data.result);
       } else {
         setResumeUrl(interview.resumeLink);
       }
-  }
-  getResumeUrl()
-  },[interview.resumeLink])
-  
-  const router = useRouter()
-  const convertInterviewToInitialData = ()=> {
-    const name = interview.name
-    const jobDescription = interview.jobDescription
-    const additionalDescription = interview.additionalDescription
-    
-    let numberOfTechnical = 0
-    let numberOfBehavioral = 0
-    interview.questions.sort((a,b)=> a.id-b.id)
-    interview.questions.forEach((x)=> {
-      if(x.type.toLowerCase()=== 'technical') {
+    };
+    getResumeUrl();
+  }, [interview.resumeLink]);
+
+  const router = useRouter();
+  const convertInterviewToInitialData = () => {
+    const name = interview.name;
+    const jobDescription = interview.jobDescription;
+    const additionalDescription = interview.additionalDescription;
+
+    let numberOfTechnical = 0;
+    let numberOfBehavioral = 0;
+    interview.questions.sort((a, b) => a.id - b.id);
+    interview.questions.forEach((x) => {
+      if (x.type.toLowerCase() === "technical") {
         numberOfTechnical++;
-      }
-      else {
+      } else {
         numberOfBehavioral++;
       }
-    })
-    return {name:name,jobDescription:jobDescription,resume:null,numberOfTechnical:numberOfTechnical,numberOfBehavioral:numberOfBehavioral, secondsPerAnswer:interview.secondsPerAnswer,additionalDescription}
-  }
-  
+    });
+    return {
+      name: name,
+      jobDescription: jobDescription,
+      resume: null,
+      numberOfTechnical: numberOfTechnical,
+      numberOfBehavioral: numberOfBehavioral,
+      secondsPerAnswer: interview.secondsPerAnswer,
+      additionalDescription,
+      resumeUrl: "",
+    };
+  };
+
   // create link to view resume if it exists
-  const [initialData,setInitialData] = useState(convertInterviewToInitialData())
+  const [initialData, setInitialData] = useState(
+    convertInterviewToInitialData()
+  );
   // get the name of the resume from the url
-  const convertUrlToName = ()=> {
-    const serverUrlCut = interview.resumeLink.replace(apiUrl+"/Interview/getPdf/","")
-    return serverUrlCut.substring(serverUrlCut.indexOf("_")+1)
-  }
+  const convertUrlToName = () => {
+    const serverUrlCut = interview.resumeLink.replace(
+      apiUrl + "/Interview/getPdf/",
+      ""
+    );
+    return serverUrlCut.substring(serverUrlCut.indexOf("_") + 1);
+  };
 
-  
-
-  const goToQuestions = ()=> {
-   
-    router.replace(`/interviews/${interview.id}/questions/${interview.questions[0].id}`)
-  }
+  const goToQuestions = () => {
+    router.replace(
+      `/interviews/${interview.id}/questions/${interview.questions[0].id}`
+    );
+  };
   return (
-    <div className='flex flex-col h-full items-center justify-center'>
+    <div className="flex flex-col h-full items-center justify-center">
+      <Button
+        onClick={() => {
+          goToQuestions();
+        }}
+        className="ml-4 m-2"
+      >
+        {"Go to Questions"}{" "}
+      </Button>
 
-    <Button onClick={()=> {goToQuestions()}} className="ml-4 m-2">{ "Go to Questions"} </Button>
-
-    <div className='w-full'>
-    <InterviewForm initialResumeUrl={resumeUrl} initialResumeName={interview.resumeLink ? convertUrlToName(): ""}  initialData={initialData} disabled={true}></InterviewForm> </div>
- 
-    
+      <div className="w-full">
+        <InterviewForm
+          allResumes={[]}
+          initialResumeUrl={resumeUrl}
+          initialResumeName={interview.resumeLink ? convertUrlToName() : ""}
+          initialData={initialData}
+          disabled={true}
+        ></InterviewForm>{" "}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default ViewInterviewClient
+export default ViewInterviewClient;

@@ -1,21 +1,35 @@
+import { resume } from "@/app/types/resume";
 import React, { useState } from "react";
+import ResumeList from "./ResumeList";
+import { set } from "lodash";
 interface fileSelectProps {
   files: File[];
   setFiles: (newValue: File[]) => void;
-  disabled: boolean;
-  initialResumeUrl: string;
-  initialResumeName: string;
+  disabled: boolean; //disabled when showing old interivew
+  initialResumeUrl: string; //for old interviews
+  initialResumeName: string; //for old interviews
+  resumes: resume[]; // list of users resumes
+  setResumes: (newValue: resume[]) => void;
+  selectedResumeUrl: string;
+  setSelectedResumeUrl: (newValue: string) => void;
+  uploadedFileUrl: string; // keep track of uploaded file url to differentiate between old and new resumes
+  setUploadedFileUrl: (newValue: string) => void;
 }
 export default function FileSelect({
   files,
   setFiles,
+  resumes,
+  setResumes,
   disabled,
   initialResumeUrl,
   initialResumeName,
+  selectedResumeUrl,
+  setSelectedResumeUrl,
+  uploadedFileUrl,
+  setUploadedFileUrl,
 }: fileSelectProps) {
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
-  const [resumeUrl, setResumeUrl] = useState<string>("");
 
   const handleDrop = (e: React.DragEvent<HTMLElement>) => {
     setDragging(false);
@@ -43,7 +57,14 @@ export default function FileSelect({
     if (pdfFiles.length === 1) {
       setFiles(pdfFiles);
       const url = URL.createObjectURL(pdfFiles[0]);
-      setResumeUrl(url);
+      const newResume: resume = {
+        fileName: pdfFiles[0].name,
+        url: url,
+        date: new Date().toISOString().split("T")[0],
+      };
+      setResumes([newResume, ...resumes]);
+      setSelectedResumeUrl(url);
+      setUploadedFileUrl(url);
     } else if (pdfFiles.length === 2) {
       setFiles([pdfFiles[0]]);
       setError("Only 1 file allowed");
@@ -53,6 +74,13 @@ export default function FileSelect({
   };
   return (
     <div className="space-y-4 flex flex-col">
+      {resumes.length > 0 && (
+        <ResumeList
+          selectedResumeUrl={selectedResumeUrl}
+          setSelectedResumeUrl={setSelectedResumeUrl}
+          resumes={resumes}
+        />
+      )}
       {!disabled && (
         <div
           onDrop={handleDrop}
@@ -73,22 +101,7 @@ export default function FileSelect({
         </div>
       )}
       {error.length > 0 && <p className="text-red-600">{error}</p>}
-      {files.length > 0 && (
-        <ul>
-          {files.map((x) => (
-            <li key={x.name}>
-              <a
-                href={resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-blue-500"
-              >
-                {x.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
+
       {files.length == 0 && initialResumeName && initialResumeUrl && (
         <a
           href={initialResumeUrl}

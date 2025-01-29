@@ -7,6 +7,13 @@ async function getUserLatestResume() {
   
   return response.data;
 }
+// get all the users resumes
+async function getUserResumes() {
+  const response = await serverAxiosInstance.get("/Interview/getAllResumes");
+  
+  return response.data;
+}
+
 
 export default async function generateInterviewForms() {
     
@@ -17,15 +24,18 @@ export default async function generateInterviewForms() {
       jobDescription:"",
       name: "",
       secondsPerAnswer:120,
-      additionalDescription:""
+      additionalDescription:"",
+      resumeUrl: ""
     }
 
     
 
-    const resumeUrlAndName = await getUserLatestResume();
+   
+    const allResumes = await getUserResumes();
+    console.log(allResumes);
 
     
   
-  return ( <InterviewForm initialResumeUrl={resumeUrlAndName.url} initialResumeName={resumeUrlAndName.fileName} initialData={initialData} disabled={false}></InterviewForm>
+  return ( <InterviewForm allResumes={allResumes} initialResumeUrl={""} initialResumeName={""}  initialData={initialData} disabled={false}></InterviewForm>
   )
 }

@@ -15,6 +15,8 @@ export default async function Page({
 }) {
   const { id } = await paramsPromise;
 
+  
+
   const interview = await fetchInterview(id);
 
   return (

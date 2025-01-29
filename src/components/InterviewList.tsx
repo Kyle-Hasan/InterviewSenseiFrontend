@@ -234,13 +234,13 @@ export default function InterviewList({
     return (
       <li
         key={item.id}
-        className="border-black border-2 p-3 mt-1 flex flex-col space-y-2 w-96 hover:cursor-pointer"
+        className="border-black border-2 p-3 mt-1 flex flex-col space-y-2 w-96 "
       >
         {editing && editingId === item.id ? (
           <Input value={editedValue} onChange={editValueChange}></Input>
         ) : (
           <div
-            className="text-center font-bold"
+            className="text-center font-bold hover:cursor-pointer"
             onClick={() => {
               navigateToInterview(item.id);
             }}

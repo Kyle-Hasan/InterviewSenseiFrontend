@@ -1,0 +1,38 @@
+# Ignore environment configuration files
+.env*
+!*.env.example  # Allow example env files for reference
+
+# Ignore sensitive application settings
+appsettings.*.json
+!appsettings.Development.json  # Optionally allow development config
+
+# Ignore local development artifacts
+bin/
+obj/
+*.db
+*.log
+*.sqlite
+*.pdb
+
+# Ignore build artifacts and dependencies
+node_modules/
+dist/
+out/
+coverage/
+.vscode/
+.idea/
+*.pid
+*.lock
+*.cache
+
+# Ignore Git and OS-specific files
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+__pycache__/
+*.swp
+*.swo
+
+# Ignore Docker and CI/CD related files
+docker-compose.override.yml

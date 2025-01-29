@@ -50,6 +50,7 @@ export default function DisplayQuestion() {
   }, [pathname]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [dialogConfirm, setDialogConfirm] = useState<(e: any) => void>(
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (e: any) => {
       console.log(e);
     }
