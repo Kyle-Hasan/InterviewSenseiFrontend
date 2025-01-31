@@ -36,7 +36,7 @@ export default  function InterviewPage() {
     let mounted = true
    const getData =  async()=> {
   
-     
+     // either we get the interview from the zustand store, react-query cache or we fetch it from the server. Should be in the react query cache at least so no need for server fetch
       setLoading(true)
       try{
       if(storedValue.interview) {

@@ -19,13 +19,9 @@ export const InterviewQuestions = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [unsavedVideo, setUnsavedVideo] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const setQuestions = useQuestionStore((state) => state.setQuestion);
+  const [questions,setQuestions] = useState<question[]>(questionsProp)
 
-  const questions = useQuestionStore((state) => state.questions);
-
-  useEffect(() => {
-    setQuestions(questionsProp);
-  }, [questionsProp, setQuestions]);
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [dialogConfirm, setDialogConfirm] = useState<(e: any) => any>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,6 +30,7 @@ export const InterviewQuestions = ({
     }
   );
   const changeQuestion = (offset: number) => {
+    // if question is unsaved, ask them to confirm before moving on
     if (unsavedVideo) {
       setDialogOpen(true);
       const confirmFunction = () => {

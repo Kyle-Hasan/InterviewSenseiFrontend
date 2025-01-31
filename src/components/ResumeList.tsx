@@ -26,7 +26,7 @@ export default function ResumeList({resumes,setSelectedResumeUrl,selectedResumeU
   return (
    
   
-<div className="h-64 w-auto"> 
+<div className="max-h-64 w-auto"> 
  
   <div 
     className="w-auto h-full p-4 rounded border border-black overflow-y-auto flex flex-col space-y-4"
