@@ -15,8 +15,7 @@ const useSignalR = (connectionUrl:string) => {
         connection.on("entitiesUpdated", (entityType:string, message) => {
             console.log(`Received Notification for ${entityType}: ${message}`);
 
-            // Invalidate React Query cache for a specific entity type
-            queryClient.invalidateQueries();
+            queryClient.invalidateQueries({ queryKey: [entityType] });
         });
 
         return () => {

@@ -36,6 +36,7 @@ export default function MainLayout({
   <SignalRProvider>
     <Navbar />
     {children}
+    <ReactQueryDevtools initialIsOpen={false} />
   </SignalRProvider>
 </QueryClientProvider>
 

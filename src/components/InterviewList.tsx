@@ -16,19 +16,11 @@ import { ArrowDown02Icon } from "hugeicons-react";
 
 import { PaginationParams } from "@/app/types/PaginationParams";
 import VirtualScroller from "./VirtualScroller";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import SignalRContext from "@/app/contexts/SignalRContext";
 
-export default function InterviewList({
-  initialInterviews,
-  totalInterviewsProp,
-  initialLoaded,
-}: {
-  initialInterviews: interview[];
-  totalInterviewsProp: number;
-  initialLoaded: number;
-}) {
-  const [interviews, setInterviews] = useState([...initialInterviews]);
+export default function InterviewList() {
+  const [interviews, setInterviews] = useState<interview[]>([]);
   const signalRContext = useContext(SignalRContext);
 
   const router = useRouter();
@@ -36,16 +28,59 @@ export default function InterviewList({
   const [editing, setEditing] = useState(false);
   const [editedValue, setEditedValue] = useState("");
   const [editingId, setEditingId] = useState(-1);
-  const [index, setIndex] = useState(initialLoaded ? initialLoaded : 10);
   const pageSize = 10;
+  const [index, setIndex] = useState(0);
 
   const [searchText, setSearchText] = useState("");
   const [nameSort, setNameSort] = useState("");
   const [dateSort, setDateSort] = useState("");
-  const [totalInterviews, setTotalInterviews] = useState(totalInterviewsProp);
+  const [totalInterviews, setTotalInterviews] = useState(0);
   const [listLoading, setListLoading] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const search = async (
+    dateSort: string,
+    nameSort: string,
+    searchText: string,
+    startIndex: number
+  ) => {
+    try {
+      const response = await axiosInstance.get("/Interview/interviewList", {
+        params: {
+          startIndex: startIndex,
+          pageSize: pageSize,
+          ...(nameSort && nameSort.length && { nameSort }),
+          ...(dateSort && dateSort.length && { dateSort }),
+          ...(searchText && searchText.length && { name: searchText }),
+        },
+      });
+
+      const paginationParams: PaginationParams = JSON.parse(
+        response.headers["pagination"]
+      );
+      setTotalInterviews(paginationParams.total);
+
+      return response.data;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  // initial load of page
+  const { data, isSuccess, isError, error: queryError }  = useQuery({
+    queryKey: ["interviews", searchText, dateSort, nameSort, 0, pageSize],
+
+    staleTime: 1000 * 60 * 5,
+    queryFn: async () => {
+   
+      setLoading(true);
+      const newInterviews = await search(dateSort, nameSort, searchText, 0);
+      
+      setLoading(false);
+    
+      return newInterviews
+    },
+  });
 
   const updateDebouncedValue = useCallback(
     debounce((newValue: string) => {
@@ -86,7 +121,14 @@ export default function InterviewList({
   };
   // make signal r connection to interview hub on backend to invalidate interview cache when its outdated
   useEffect(() => {
+    // from react query above for when component loaded
+  
+    if(data) {
+      setInterviews([...data])
+      setIndex(pageSize)
+    }
     const connect = async () => {
+      
       await signalRContext?.createConnection("/hubs/interview", "interview");
     };
     connect();
@@ -95,29 +137,15 @@ export default function InterviewList({
     };
   }, []);
 
-  const search = async (
-    dateSort: string,
-    nameSort: string,
-    searchText: string,
-    startIndex: number
-  ) => {
-    const response = await axiosInstance.get("/Interview/interviewList", {
-      params: {
-        startIndex: startIndex,
-        pageSize: pageSize,
-        ...(nameSort && nameSort.length && { nameSort }),
-        ...(dateSort && dateSort.length && { dateSort }),
-        ...(searchText && searchText.length && { name: searchText }),
-      },
-    });
-
-    const paginationParams: PaginationParams = JSON.parse(
-      response.headers["pagination"]
-    );
-    setTotalInterviews(paginationParams.total);
-
-    return response.data;
-  };
+  useEffect(() => {
+    if (isSuccess) {
+     setInterviews([...data])
+      
+    }
+    if (isError) {
+     console.log(queryError.message)
+    }
+  }, [isSuccess, isError, data, queryError]);
 
   const handleSearch = async (
     dateSort: string,
@@ -220,14 +248,17 @@ export default function InterviewList({
   const deleteMutation = useMutation({
     mutationFn: deleteItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["interviews"] });
+      setIndex(0)
+      // let signal r handle invalidations
     },
   });
 
   const editMutation = useMutation({
     mutationFn: submitEdit,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["interviews"] });
+      setIndex(0)
+      // let the signal r handle invalidation
+     
     },
   });
   const renderInterview = (item: interview) => {
