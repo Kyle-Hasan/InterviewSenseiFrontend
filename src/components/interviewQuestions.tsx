@@ -19,7 +19,7 @@ export const InterviewQuestions = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [unsavedVideo, setUnsavedVideo] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [questions,setQuestions] = useState<question[]>(questionsProp)
+  
 
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,7 +57,7 @@ export const InterviewQuestions = ({
             Go Back
           </Button>
         )}
-        {currentQuestionIndex !== questions.length - 1 && (
+        {currentQuestionIndex !== questionsProp.length - 1 && (
           <Button
             className="self-start mr-10"
             onClick={() => {
@@ -69,13 +69,13 @@ export const InterviewQuestions = ({
         )}
       </div>
 
-      {questions && questions.length > 0 && (
+      {questionsProp && questionsProp.length > 0 && (
         <>
           {" "}
           <InterviewRecord
             secondsPerAnswer={secondsPerAnswer}
             setUnsavedVideo={setUnsavedVideo}
-            question={questions[currentQuestionIndex]}
+            question={questionsProp[currentQuestionIndex]}
             disabled={false}
           ></InterviewRecord>
           <PopupDialog

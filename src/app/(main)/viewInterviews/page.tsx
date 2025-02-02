@@ -30,5 +30,6 @@ export default async function viewInterviews() {
   const interviewsObj = await fetchInterviews();
 
 
-  return <InterviewList initialInterviews={interviewsObj?.interviews} initialLoaded={initialPageSize} totalInterviewsProp={interviewsObj?.total ? interviewsObj.total : 0} />;
+
+  return <InterviewList initialInterviews={interviewsObj?.interviews ? interviewsObj.interviews : [] } initialLoaded={initialPageSize} totalInterviewsProp={interviewsObj?.total ? interviewsObj.total : 0} />;
 }

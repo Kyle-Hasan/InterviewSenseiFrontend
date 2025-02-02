@@ -23,13 +23,19 @@ export default function ResumeList({resumes,setSelectedResumeUrl,selectedResumeU
     
   }
 
+  const heightClass =
+  resumes.length >= 3 ? 'h-64' :
+  resumes.length === 2 ? 'h-48' :
+  resumes.length === 1 ? 'h-16' :
+  'max-h-0';
+
   return (
    
   
-<div className="max-h-64 w-auto"> 
+<div className={`${heightClass} w-auto`}> 
  
   <div 
-    className="w-auto h-full p-4 rounded border border-black overflow-y-auto flex flex-col space-y-4"
+    className={`w-auto h-full p-4 rounded border border-black overflow-y-auto flex flex-col space-y-4`}
     style={{ 
       contentVisibility: 'auto', // CSS containment
       contain: 'strict', // Isolates layout calculations

@@ -11,7 +11,7 @@ export const useResponses = (questionId: number, sendForReviewFn:Function, postU
    {queryKey: [ 'responses', questionId] ,
    queryFn: async () => {
       const { data } = await axiosInstance.get(`/Response/byQuestion?questionId=${questionId}`);
-      console.log(data)
+   
       return data;
     },
     staleTime: 1000 * 60 * 10, // 10 minutes

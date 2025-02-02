@@ -9,38 +9,37 @@ import { User } from "../../types/userType";
 import { AuthContext } from "../../contexts/AuthContext";
 
 const SignupPage = () => {
-  const [email, setEmail] = useState("");
-  const [username,setUsername] = useState("")
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const authContext = useContext(AuthContext)
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const authContext = useContext(AuthContext);
   const router = useRouter();
-  const [errors,setErrors] = useState("")
-  
+  const [errors, setErrors] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    setErrors("")
+    setErrors("");
     e.preventDefault();
 
-    if(username.length === 0 || password.length === 0 ) {
-      setErrors("Username and password are required")
-      return
+    if (username.length === 0 || password.length === 0 || confirmPassword.length === 0) {
+      setErrors("Username and both password fields are required");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrors("Passwords do not match");
+      return;
     }
 
     try {
-
-    const response = await axiosInstance.post("/Auth/register",{email,username,password})
-
-    const userData:User = response.data
-    if (userData) {
-      
-      authContext?.setLogin(userData)
-      router.push("/viewInterviews")
+      const response = await axiosInstance.post("/Auth/register", { username, password });
+      const userData: User = response.data;
+      if (userData) {
+        authContext?.setLogin(userData);
+        router.push("/viewInterviews");
+      }
+    } catch (e) {
+      setErrors("Sign up failed, please try again");
     }
-
-  }
-  catch(e) {
-    setErrors("sign up failed, please try again ")
-  }
   };
 
   return (
@@ -54,28 +53,27 @@ const SignupPage = () => {
           required
         />
         <Input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          required
-        />
-        <Input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          
+          required
+        />
+        <Input
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           required
         />
         <Button type="submit" className="w-full">Sign Up</Button>
         <Link 
-        href="/login" 
-        className="text-blue-500 hover:text-blue-700 font-medium underline mt-4"
+          href="/login" 
+          className="text-blue-500 hover:text-blue-700 font-medium underline mt-4"
         >
-        Login
-      </Link>
-      {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
+          Login
+        </Link>
+        {errors && <p className="text-red-600 mt-1 mb-1">{errors}</p>}
       </form>
     </div>
   );

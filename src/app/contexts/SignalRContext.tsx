@@ -11,6 +11,7 @@ interface SignalRContextType {
 }
 
 const SignalRContext = createContext<SignalRContextType | null>(null);
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export const SignalRProvider = ({ children }: {children:React.ReactNode}) => {
     const connectionsRef = useRef(new Map()); 
@@ -27,9 +28,9 @@ export const SignalRProvider = ({ children }: {children:React.ReactNode}) => {
             console.log(`Connection for key "${connectionKey}" already exists.`);
             return connectionsRef.current.get(connectionKey);
         }
-
+        const finalUrl = apiUrl?.replace(/\/api$/, "");
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5095"+hubUrl)
+            .withUrl(finalUrl+hubUrl)
             .withAutomaticReconnect()
             .build();
 

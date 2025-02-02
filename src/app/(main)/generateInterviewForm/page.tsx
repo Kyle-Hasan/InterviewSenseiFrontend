@@ -11,7 +11,7 @@ async function getUserLatestResume() {
 async function getUserResumes() {
   const response = await serverAxiosInstance.get("/Interview/getAllResumes");
   
-  return response.data;
+  return response.data ? response.data : [];
 }
 
 
@@ -32,7 +32,7 @@ export default async function generateInterviewForms() {
 
    
     const allResumes = await getUserResumes();
-    console.log(allResumes);
+  
 
     
   

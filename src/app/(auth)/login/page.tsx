@@ -16,6 +16,7 @@ const LoginPage = () => {
   const [errors,setErrors] = useState("")
   
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     setErrors("")
     e.preventDefault();
@@ -24,7 +25,10 @@ const LoginPage = () => {
       return
     }
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+   
     const response = await axiosInstance.post("/Auth/login", {username,password})
+    
     const userData:User = response.data
     if (userData) {
       router.push("/viewInterviews")

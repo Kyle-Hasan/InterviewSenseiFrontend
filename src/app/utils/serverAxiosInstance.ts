@@ -2,9 +2,9 @@ import axios from "axios";
 
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const serverAxiosInstance = axios.create({
-  baseURL: "http://localhost:5095/api", 
+  baseURL: apiUrl, 
   
   headers: {
     "Content-Type": "application/json", 
@@ -35,7 +35,7 @@ serverAxiosInstance.interceptors.response.use(
 
       try {
         const refreshResponse = await axios.get(
-          "http://localhost:5095/api/Auth/refreshToken",
+          apiUrl + "/Auth/refreshToken",
         
           { withCredentials: true }
         );
@@ -46,7 +46,7 @@ serverAxiosInstance.interceptors.response.use(
         }
       } catch (refreshError) {
 
-      console.log("hit server axios instance")
+
        
         if (typeof window !== "undefined") {
           window.location.href = "/login";

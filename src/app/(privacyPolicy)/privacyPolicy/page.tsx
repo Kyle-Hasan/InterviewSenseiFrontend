@@ -4,7 +4,7 @@ import { Navbar } from '@/components/Navbar';
 export default async function PrivacyPolicyAndTerms() {
   // Check if the access token exists to if they are logged in to display nav bar
   const hasCookie = (await cookies()).has('accessToken');
-  console.log(" cookie2 " + hasCookie);
+
 
   return (
     <div>

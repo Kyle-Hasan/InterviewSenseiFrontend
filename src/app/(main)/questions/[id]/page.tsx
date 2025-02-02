@@ -52,7 +52,7 @@ export default function DisplayQuestion() {
   const [dialogConfirm, setDialogConfirm] = useState<(e: any) => void>(
      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (e: any) => {
-      console.log(e);
+  
     }
   );
   const changeQuestion = (offset: number) => {

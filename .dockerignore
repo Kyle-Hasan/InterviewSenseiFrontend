@@ -1,6 +1,4 @@
 # Ignore environment configuration files
-.env*
-!*.env.example  # Allow example env files for reference
 
 # Ignore sensitive application settings
 appsettings.*.json

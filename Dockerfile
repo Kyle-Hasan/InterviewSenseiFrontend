@@ -11,7 +11,7 @@ RUN npm install --force
 
 
 COPY . .
-
+ENV NODE_ENV=production
 
 RUN npm run build
 

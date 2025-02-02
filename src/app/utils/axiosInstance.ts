@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+
 const axiosInstance = axios.create({
   baseURL: apiUrl,
 
@@ -19,13 +20,14 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    if (error.response && (error.response.status === 401 || error.response.status === 400) && !originalRequest._retry) {
+    const errorMessage:string = error.response.data|| "";
+   
+    if (error.response && (error.response.status === 401 && !errorMessage.toLowerCase().includes("bad login") && !errorMessage.toLowerCase().includes("username taken") ) && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const refreshResponse = await axios.get(
-          apiUrl + "/refreshToken",
+          apiUrl + "/Auth/refreshToken",
 
           { withCredentials: true }
         );
@@ -37,13 +39,14 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
 
         // Redirect to /login if refresh fails
-
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         } else {
           return NextResponse.redirect("/login");
 
         }
+
+       
       }
     }
 
