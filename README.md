@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Interview Sensei Frontend
 
-## Getting Started
+This repository contains the frontend for **Interview Sensei**, an AI-powered interview preparation application. The frontend is built with **Next.js**, styled with **Tailwind CSS**, and interacts with the backend via API endpoints. It provides an intuitive interface for users to upload resumes, generate interview questions, record answers, and receive AI-generated feedback.
 
-First, run the development server:
+## Features
+- **AI-powered question generation** based on user-uploaded resumes and job descriptions
+- **User authentication & session management**
+- **Interview recording and playback**
+- **AI-generated feedback on recorded answers**
+- **Modern, responsive UI with Tailwind CSS**
+- **Seamless integration with the .NET backend**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech Stack
+- **Frontend Framework:** Next.js
+- **Styling:** Tailwind CSS
+- **State Management:** React Hooks/Context API
+- **API Communication:** RESTful API (backend hosted on AWS)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
+- Node.js installed
+- A backend instance running (refer to the backend README)
+- Environment variables configured
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Installation
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/Kyle-Hasan/interview-sensei-frontend.git
+   cd interview-sensei-frontend
+   ```
 
-## Learn More
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. Set up environment variables:
+   Create a `.env.local` file with the following variables:
+   ```env
+   NEXT_PUBLIC_API_URL=your_backend_api_url
+   NEXT_PUBLIC_AWS_S3_BUCKET=your_s3_bucket_name
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Run the application locally:
+   ```sh
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
+- The frontend relies on the backend being available. If the backend (hosted on AWS free tier) is down, some features may not work.
+- If the link is unavailable, please refer to the provided video for an overview of the application's functionality.
 
-## Deploy on Vercel
+## License
+This project is licensed under the MIT License.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
