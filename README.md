@@ -39,7 +39,7 @@ This repository contains the frontend for **Interview Sensei**, an AI-powered in
    Create a `.env.local` file with the following variables:
    ```env
    NEXT_PUBLIC_API_URL=your_backend_api_url
-   NEXT_PUBLIC_AWS_S3_BUCKET=your_s3_bucket_name
+   NEXT_PUBLIC_SIGNED_URLS=true
    ```
 
 4. Run the application locally:
