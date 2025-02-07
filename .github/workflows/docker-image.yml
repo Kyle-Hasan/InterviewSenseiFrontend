@@ -24,14 +24,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: |
-          docker build -t $DOCKERHUB_USERNAME/$DOCKER_REPO:backend .
+          docker build -t $DOCKERHUB_USERNAME/$DOCKER_REPO:frontend .
 
       - name: Push Docker Image
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: |
-          docker push $DOCKERHUB_USERNAME/$DOCKER_REPO:backend
+          docker push $DOCKERHUB_USERNAME/$DOCKER_REPO:frontend
 
       - name: Notify Backend Webhook on EC2
         env:
