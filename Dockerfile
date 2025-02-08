@@ -1,22 +1,22 @@
 FROM node:18-alpine
 
-
 WORKDIR /app
-
 
 COPY package*.json ./
 
-
 RUN npm install --force
 
-
 COPY . .
+
+
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SIGNED_URLS
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_SIGNED_URLS=$NEXT_PUBLIC_SIGNED_URLS
 ENV NODE_ENV=production
 
 RUN npm run build
 
-
 EXPOSE 3000
-
 
 CMD ["npm", "start"]
