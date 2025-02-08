@@ -23,8 +23,7 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL}}
-          NEXT_PUBLIC_SIGNED_URLS: ${{ secrets.NEXT_PUBLIC_SIGNED_URLS}}
+         
           
         run: |
           docker build -t $DOCKERHUB_USERNAME/$DOCKER_REPO:frontend .
