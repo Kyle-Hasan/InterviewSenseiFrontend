@@ -21,7 +21,10 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
         interview.resumeLink
       ) {
         const response = await axiosInstance.get(interview.resumeLink);
+        debugger
+        if(response.data) {
         setResumeUrl(response.data.result);
+        }
       } else {
         setResumeUrl(interview.resumeLink);
       }

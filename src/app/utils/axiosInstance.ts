@@ -20,9 +20,12 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const errorMessage:string = error.response.data|| "";
    
-    if (error.response && (error.response.status === 401 && !errorMessage.toLowerCase().includes("bad login") && !errorMessage.toLowerCase().includes("username taken") ) && !originalRequest._retry) {
+    const errorMessage:string = error?.response.data|| "";
+    
+    
+   
+    if (error?.response && (error?.response.status === 401 && !errorMessage.toLowerCase().includes("bad login") && !errorMessage.toLowerCase().includes("username taken") ) && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {

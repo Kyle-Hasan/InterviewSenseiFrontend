@@ -93,6 +93,10 @@ export default function InterviewList() {
   const getMoreInterviews = async () => {
     try {
       setListLoading(true);
+      debugger
+      if(index >= totalInterviews) {
+        return
+      }
 
       const result = await queryClient.fetchQuery({
         queryKey: [
@@ -139,6 +143,8 @@ export default function InterviewList() {
 
   useEffect(() => {
     if (isSuccess) {
+      debugger
+      setIndex(pageSize)
      setInterviews([...data])
       
     }
