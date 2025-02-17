@@ -1,6 +1,10 @@
+import { StringToNumber } from "lodash"
+
 export interface response {
     answer:string,
     id:number,
-    feedback:string,
+    positiveFeedback:string,
+    negativeFeedback:string,
+    exampleResponse:string
     videoLink:string
 }

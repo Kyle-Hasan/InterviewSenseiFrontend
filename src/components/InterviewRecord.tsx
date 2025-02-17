@@ -53,7 +53,7 @@ export default function InterviewRecord({
         setUnsavedVideo(false);
         setLoadingResponse(false);
         const data: response = response.data;
-        convertToGoodAndBad(data.feedback);
+        convertToGoodAndBad(data.positiveFeedback,data.negativeFeedback);
         setAnswer(data.answer);
 
         return data;
@@ -99,7 +99,7 @@ export default function InterviewRecord({
 
       if (responses && responses.length > 0) {
         setSelectedResponseIndex(responses?.length - 1);
-        convertToGoodAndBad(responses[responses?.length - 1].feedback);
+        convertToGoodAndBad(responses[responses?.length - 1].positiveFeedback,responses[responses?.length - 1].negativeFeedback);
         setAnswer(responses[responses?.length - 1].answer);
       } else {
         setSelectedResponseIndex(0);
@@ -108,13 +108,10 @@ export default function InterviewRecord({
     }
   }, [question, isLoading, isError]);
 
-  const convertToGoodAndBad = (feedback: string) => {
-    const feedbackArray = feedback.split("@u5W$");
-    if (feedbackArray.length == 1) {
-      setReviewBad([feedbackArray[0]]);
-      setReviewGood([]);
-    } else {
-      let goodArr = feedbackArray[1].split("...");
+  const convertToGoodAndBad = (positiveFeedback:string,negativeFeedback:string) => {
+   
+    // split separate bullet points by splitting text at ..., remove good and needs improvement headers from display as well 
+      let goodArr = positiveFeedback.split("...");
       if (goodArr.length > 0) {
         goodArr[0] = goodArr[0].replace("Good: ", "");
         goodArr = goodArr
@@ -122,7 +119,7 @@ export default function InterviewRecord({
           .filter((x) => x.length > 10);
       }
 
-      let badArr = feedbackArray[2].split("...");
+      let badArr = negativeFeedback.split("...");
       if (badArr.length > 0) {
         badArr[0] = badArr[0].replace("Needs Improvement: ", "");
         badArr = badArr
@@ -131,7 +128,7 @@ export default function InterviewRecord({
       }
       setReviewGood(goodArr);
       setReviewBad(badArr);
-    }
+    
   };
 
   const handleSelectChange = (value: string) => {
@@ -140,7 +137,7 @@ export default function InterviewRecord({
     if (responses) {
       const showResponse = responses[index];
       if (responses && responses.length > 0) {
-        convertToGoodAndBad(showResponse.feedback);
+        convertToGoodAndBad(showResponse.positiveFeedback,showResponse.negativeFeedback);
         setAnswer(showResponse.answer);
       }
     }
@@ -248,6 +245,12 @@ export default function InterviewRecord({
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              {responses && responses[selectedResponseIndex] && (
+                <div className="w-full mt-4">
+                  <h3 className="font-bold text-center underline mb-2">Example Response</h3>
+                  <p>{responses[selectedResponseIndex].exampleResponse}</p>
                 </div>
               )}
             </>
