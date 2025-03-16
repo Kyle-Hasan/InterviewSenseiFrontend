@@ -8,7 +8,8 @@ export interface interview {
     resumeLink:string,
     createdDate:string
     secondsPerAnswer:number,
-    additionalDescription:string
+    additionalDescription:string,
+    isLive:boolean
     
 }
 

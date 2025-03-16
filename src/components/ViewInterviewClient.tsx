@@ -37,6 +37,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
     const name = interview.name;
     const jobDescription = interview.jobDescription;
     const additionalDescription = interview.additionalDescription;
+    const isLive =  interview.isLive;
 
     let numberOfTechnical = 0;
     let numberOfBehavioral = 0;
@@ -56,6 +57,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
       numberOfBehavioral: numberOfBehavioral,
       secondsPerAnswer: interview.secondsPerAnswer,
       additionalDescription,
+      isLive,
       resumeUrl: "",
     };
   };

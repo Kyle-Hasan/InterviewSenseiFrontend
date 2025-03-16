@@ -20,9 +20,15 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    
+    if(!error || !error.response) {
+      return
+    }
+    
    
     const errorMessage:string = error?.response.data|| "";
-    
+
     
    
     if (error?.response && (error?.response.status === 401 && !errorMessage.toLowerCase().includes("bad login") && !errorMessage.toLowerCase().includes("username taken") ) && !originalRequest._retry) {

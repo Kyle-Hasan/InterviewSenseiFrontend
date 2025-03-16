@@ -1,4 +1,5 @@
 import axios from "axios";
+import { errorMonitor } from "events";
 
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -29,7 +30,7 @@ serverAxiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if(!error) {
+    if(!error || !error.response) {
       return
     }
 

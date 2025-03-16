@@ -20,6 +20,7 @@ import { Button } from "./ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInterviewStore } from "@/app/hooks/useInterviews";
 import { resume } from "@/app/types/resume";
+import { Checkbox } from "./ui/checkbox";
 
 interface interviewFormData {
   resume: File | null;
@@ -30,6 +31,7 @@ interface interviewFormData {
   name: string;
   secondsPerAnswer: number;
   additionalDescription: string;
+  isLive:boolean;
 }
 
 interface interviewFormProps {
@@ -57,6 +59,7 @@ export const InterviewForm = ({
   const [selectedResumeUrl, setSelectedResumeUrl] = useState<string>(allResumes && allResumes.length > 0 ? allResumes[0].url : "");
   // use this to differeniate between old and new resumes since theres only 1 uploaded resume allowed
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>("");
+  
 
 
   const queryClient = useQueryClient();
@@ -67,7 +70,7 @@ export const InterviewForm = ({
     e.preventDefault();
     setErrors("");
 
-    if (formData.numberOfBehavioral + formData.numberOfTechnical === 0) {
+    if (!formData.isLive && (formData.numberOfBehavioral + formData.numberOfTechnical === 0)) {
       setErrors("Need more than 1 question");
       return;
     }
@@ -120,6 +123,13 @@ export const InterviewForm = ({
       questions = questions.sort((a, b) => a.id - b.id);
       setInterview(interview);
       setLoading(false);
+
+      debugger
+
+      // an interview that is live has no questions to add
+      if(!interview.isLive) {
+      
+      // set questions in the cache so we can  just load them from the cache when we navigate
       for (let i = 0; i < questions.length; i++) {
         const question = questions[i];
         queryClient.setQueryData(["questions", question.id], question);
@@ -128,6 +138,18 @@ export const InterviewForm = ({
       router.replace(
         `/interviews/${interview.id}/questions/${interview.questions[0].id}`
       );
+    }
+
+    else {  
+      router.replace(
+        `/liveInterview/${interview.id}`
+      );
+
+    }
+
+
+
+
     } catch (e) {
       setErrors("Errors : " + e);
     } finally {
@@ -161,6 +183,16 @@ export const InterviewForm = ({
           disabled={disabled}
           required
         />
+         <div className="flex items-center space-x-2">
+      <Checkbox onCheckedChange={(checked)=> {setFormData({...formData,isLive:checked as boolean})}} checked={formData.isLive} id="live" />
+      <label
+        htmlFor="live"
+        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        Is this a live interview?
+      </label>
+    </div>
+    {!formData.isLive &&  <>
         <p>Max seconds per answer</p>
         <Input
           placeholder="0"
@@ -220,6 +252,8 @@ export const InterviewForm = ({
             </SelectGroup>
           </SelectContent>
         </Select>
+    
+        </>}
         <p>Job Description </p>
         <Textarea
           disabled={disabled}

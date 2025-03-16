@@ -25,7 +25,8 @@ export default async function generateInterviewForms() {
       name: "",
       secondsPerAnswer:120,
       additionalDescription:"",
-      resumeUrl: ""
+      resumeUrl: "",
+      isLive:false
     }
 
     
