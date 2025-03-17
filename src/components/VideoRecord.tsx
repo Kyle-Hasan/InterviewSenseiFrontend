@@ -161,7 +161,8 @@ export default function VideoRecord({
         audio: true,
       });
 
-      if (videoRef.current && mediaStream.current) {
+
+      if (videoRef.current) {
         videoRef.current.srcObject = mediaStream.current;
         videoRef.current.muted = true;
         videoRef.current.play();

@@ -1,8 +1,10 @@
 import React, { useRef, useState } from "react";
 import { Button } from "./ui/button";
+import { useMicVAD, utils } from "@ricky0123/vad-react";
+import { send } from "process";
 interface LiveInterviewVideoRecordProps {
   setBlob: (blob: Blob) => void;
-  sendMessage: (audioChunks: any[]) => void;
+  sendMessage: (blob:Blob) => void;
   endInterview: (videoChunks: any[]) => void;
   startInterview: () => void;
   videoLink: string;
@@ -17,17 +19,49 @@ export default function LiveInterviewVideoRecord({
   setBlob,
 }: LiveInterviewVideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+
   // this so that we can differientiate between the first recording and the subsequent ones
   const [hasVideo, setHasVideo] = useState(false);
 
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const mediaStream = useRef<MediaStream | null>(null);
+  const vad = useMicVAD({
+    startOnLoad: false,
+    redemptionFrames:20,
+    onSpeechEnd: async (audio) => {
+      
+      const wavBuffer = utils.encodeWAV(audio)
+
+
+      const recordedBlob = convertDataToBlob([wavBuffer]);
+  
+      
+
+      setBlob(recordedBlob)
+      await sendMessage(recordedBlob);
+      
+    },
+  })
+  // for silence check streams( easier to extract audio only out of)
 
   // State variables
   const [recording, setRecording] = useState(false);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const silenceStartTimeRef = useRef<number | null>(null);
+  const lastCheckTime = useRef<number>(0);
+  const lastVolume = useRef<number>(0);
+  const lastSpokeTime = useRef<number>(0);
+
   const MAX_INTERVIEW_LENGTH = 300;
+  const CHECK_INTERVAL = 200;
+  let SILENCE_THRESHOLD = 0.01;
+  const SILENCE_THRESHOLD_MULTIPLIER = 2.8;
+  const SILENCE_DURATION_TARGET = 800; // 800 ms
+  const DECAY_FACTOR = 0.60; // make volume drops faster if they stop making noise
+  
 
   const handleStream = async (stream: MediaStream) => {
     mediaRecorder.current = new MediaRecorder(stream as MediaStream);
@@ -60,7 +94,7 @@ export default function LiveInterviewVideoRecord({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const convertDataToBlob = (data: any[]) => {
-    return new Blob(data, { type: "video/webm" });
+    return new Blob(data, { type: "audio/wav" });
   };
 
   const startRecording = async () => {
@@ -72,12 +106,15 @@ export default function LiveInterviewVideoRecord({
         video: true,
         audio: true,
       });
+      vad.start();
 
       if (videoRef.current && mediaStream.current) {
         videoRef.current.srcObject = mediaStream.current;
         videoRef.current.muted = true;
         videoRef.current.play();
       }
+       // we switch to VAD for now, keep other code in case we cant use that library for some reason
+     // initializeSilenceDetection();
 
       const recordedChunks = await handleStream(mediaStream.current);
 
@@ -98,6 +135,110 @@ export default function LiveInterviewVideoRecord({
     }
   };
 
+  const initializeSilenceDetection = async () => {
+    const audioContext = new AudioContext();
+    audioContextRef.current = audioContext;
+    const source = audioContext.createMediaStreamSource(mediaStream.current as MediaStream);
+    const analyser = audioContext.createAnalyser();
+  
+    analyser.fftSize = 1024; // Increased for better frequency analysis
+    source.connect(analyser);
+  
+    analyserRef.current = analyser;
+    await preWarmMicrophone(300);
+    const avgBackgroundNoise = await calibrateForBackgroundNoise(500);
+    SILENCE_THRESHOLD = avgBackgroundNoise * SILENCE_THRESHOLD_MULTIPLIER; // Increase threshold multiplier
+  
+    
+  
+    checkSilence();
+  };
+
+  const preWarmMicrophone = (duration = 300): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, duration));
+  };
+  
+  const calibrateForBackgroundNoise = (duration = 300): Promise<number> => {
+    const startTime = performance.now();
+    const noiseSamples: number[] = [];
+  
+    return new Promise((resolve) => {
+      const sampleNoise = () => {
+        noiseSamples.push(getAmplitudeRMS());
+        // remove first 3 to account for mic warming up(may need adjustments)
+       
+  
+        if (performance.now() - startTime < duration) {
+          requestAnimationFrame(sampleNoise)
+        } else {
+          
+          // filter out initial 0's/ quietness, even if it really is just mostly 0, this wont effect the avg too much since its default 0
+          noiseSamples.splice(0,3)
+
+        
+          const noiseSampleAvg =
+            noiseSamples.reduce((sum, sample) => sum + sample, 0) / noiseSamples.length;
+          resolve(noiseSampleAvg);
+        }
+      };
+  
+      sampleNoise();
+    });
+  };
+  
+  const getAmplitudeRMS = (): number => {
+    const amplitudeArr = new Uint8Array(analyserRef.current?.frequencyBinCount ?? 0);
+    analyserRef.current?.getByteFrequencyData(amplitudeArr);
+  
+    // Calculate raw RMS from frequency data
+    const rawRMS = Math.sqrt(
+      amplitudeArr.reduce((sum, amp) => sum + amp ** 2, 0) / amplitudeArr.length
+    );
+  
+    // Dynamically choose a smoothing factor:
+    // - Use a lower factor (faster decay) if rawRMS is lower than the smoothed value.
+    // - Use a higher factor (slower increase) if rawRMS is higher.
+    const decayFactor = rawRMS < lastVolume.current ? 0.5 : 0.9;
+  
+    // Apply exponential smoothing: when falling, the value drops faster; when rising, it climbs slower.
+    const smoothedRMS = lastVolume.current * decayFactor + rawRMS * (1 - decayFactor);
+    lastVolume.current = smoothedRMS;
+  
+    return smoothedRMS;
+  };
+  
+  const checkSilence = () => {
+    const now = performance.now();
+    if (now - lastCheckTime.current < CHECK_INTERVAL) {
+      requestAnimationFrame(checkSilence);
+      return;
+    }
+    lastCheckTime.current = now;
+  
+    const avg = getAmplitudeRMS();
+  
+  
+    // **If volume suddenly drops 60% within 500ms, assume silence**
+    if (avg < lastVolume.current * 0.4 && now - lastSpokeTime.current < 500) {
+     
+      lastSpokeTime.current = now - SILENCE_DURATION_TARGET; // Force earlier silence detection
+    }
+  
+    if (avg < SILENCE_THRESHOLD) {
+      if (!silenceStartTimeRef.current) {
+        silenceStartTimeRef.current = Date.now();
+      }
+      if (Date.now() - silenceStartTimeRef.current >= SILENCE_DURATION_TARGET) {
+      
+        silenceStartTimeRef.current = null;
+      }
+    } else {
+      silenceStartTimeRef.current = null; // Reset if speaking
+      lastSpokeTime.current = now;
+    }
+  
+    setTimeout(checkSilence, CHECK_INTERVAL);
+  };
   // Mock function to handle starting a live interview session
   const startLiveInterview = async () => {
     await startInterview();

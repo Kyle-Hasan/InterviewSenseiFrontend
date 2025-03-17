@@ -93,7 +93,7 @@ export default function InterviewList() {
   const getMoreInterviews = async () => {
     try {
       setListLoading(true);
-      debugger
+      
       if(index >= totalInterviews) {
         return
       }
@@ -143,7 +143,7 @@ export default function InterviewList() {
 
   useEffect(() => {
     if (isSuccess) {
-      debugger
+      
       setIndex(pageSize)
      setInterviews([...data])
       

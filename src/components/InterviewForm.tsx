@@ -124,7 +124,7 @@ export const InterviewForm = ({
       setInterview(interview);
       setLoading(false);
 
-      debugger
+      
 
       // an interview that is live has no questions to add
       if(!interview.isLive) {

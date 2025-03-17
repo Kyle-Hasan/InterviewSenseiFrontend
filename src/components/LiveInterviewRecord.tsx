@@ -7,6 +7,7 @@ import LiveInterviewVideoRecord from "./LiveInterviewVideoRecord";
 import { message } from "@/app/types/message";
 import LiveInterviewTranscript from "./LiveInterviewTranscript";
 import axiosInstance from "@/app/utils/axiosInstance";
+import { messageResponse } from "@/app/types/messageResponse";
 
 interface LiveInterviewRecordProps {
   interviewId:number,
@@ -35,11 +36,63 @@ export default function LiveInterviewRecord({
   } , []);
 
 
+  const textToSpeech = (text:string)=> {
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
+
+  }
+
+
   
 
 
 
-  const sendMessage = async (audioChunks:any[])=> {
+  const sendMessage = async (blob:Blob)=> {
+    
+    if(!blob) {
+      return
+    }
+
+    
+    try{
+    const formData = new FormData();
+    formData.append("audio", blob, "audio.wav");
+    formData.append("interviewId",interviewId.toString());
+
+    const response = await axiosInstance.post<messageResponse>(
+      "/Message/addMessage",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    const messageResponse = response.data
+    const userMessage:message  ={
+      content:messageResponse.userMessage,
+      fromAI:false,
+      interviewId
+    };
+
+    const aiMessage:message  ={
+      content:messageResponse.aiResponse,
+      fromAI:true,
+      interviewId
+    };
+
+    setTranscripts([...transcripts,userMessage,aiMessage])
+    textToSpeech(aiMessage.content)
+
+
+  }
+  catch(error) {
+    console.error(error)
+  }
+
+    ;
+
 
   }
 
@@ -48,11 +101,11 @@ export default function LiveInterviewRecord({
   }
 
   const startInterview = async ()=> {
-    debugger
+    
 
-    const initialMessage = await axiosInstance.get(`/Message/initalizeInterview/${interviewId}`)
-
-    setTranscripts([...transcripts,initialMessage.data])
+    const initialMessage = await axiosInstance.get<message>(`/Message/initalizeInterview/${interviewId}`);
+    textToSpeech(initialMessage.data.content);
+    setTranscripts([...transcripts,initialMessage.data]);
 
   }
   
