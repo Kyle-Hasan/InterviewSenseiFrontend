@@ -29,6 +29,8 @@ export default function LiveInterviewRecord({
 
   const [unsavedVideo,setUnsavedVideo] = useState(false);
   const [blob, setBlob] = useState<Blob>();
+  const [loadingMessage,setLoadingMessage] = useState(false);
+  const [loadingInitial,setLoadingInitial] = useState(false)
 
 
   useEffect(()=> {
@@ -59,6 +61,8 @@ export default function LiveInterviewRecord({
     formData.append("audio", blob, "audio.wav");
     formData.append("interviewId",interviewId.toString());
 
+    setLoadingMessage(true);
+
     const response = await axiosInstance.post<messageResponse>(
       "/Message/addMessage",
       formData,
@@ -68,6 +72,8 @@ export default function LiveInterviewRecord({
         },
       }
     );
+
+    
 
     const messageResponse = response.data
     const userMessage:message  ={
@@ -82,8 +88,9 @@ export default function LiveInterviewRecord({
       interviewId
     };
 
-    setTranscripts([...transcripts,userMessage,aiMessage])
-    textToSpeech(aiMessage.content)
+    setTranscripts([...transcripts,userMessage,aiMessage]);
+    textToSpeech(aiMessage.content);
+    setLoadingMessage(false);
 
 
   }
@@ -101,13 +108,19 @@ export default function LiveInterviewRecord({
   }
 
   const startInterview = async ()=> {
+
+    setLoadingInitial(true);
     
 
     const initialMessage = await axiosInstance.get<message>(`/Message/initalizeInterview/${interviewId}`);
     textToSpeech(initialMessage.data.content);
     setTranscripts([...transcripts,initialMessage.data]);
+    setLoadingInitial(false);
 
   }
+
+
+  
   
 
   return (
@@ -129,7 +142,7 @@ export default function LiveInterviewRecord({
             <Spinner />
           ) : (
             <>
-              <LiveInterviewTranscript transcripts={transcripts}/>
+              <LiveInterviewTranscript loadingInitial={loadingInitial} loadingMessage={loadingMessage} transcripts={transcripts}/>
             </>
           )}
       

@@ -8,12 +8,27 @@ import DisplayMessage from './DisplayMessage';
 interface LiveInterviewTranscriptProps {
   transcripts?: message[];
   loadingTranscript?: boolean;
+  loadingMessage:boolean;
+  loadingInitial:boolean;
 }
 
 export default function LiveInterviewTranscript({ 
   transcripts = [], 
-  loadingTranscript = false 
+  loadingTranscript = false,
+  loadingInitial,
+  loadingMessage
 }: LiveInterviewTranscriptProps) {
+
+  const aiLoadingMessage:message = {
+    interviewId:0,
+    content:"",
+    fromAI:true
+  };
+  const userLoadingMessage:message = {
+    interviewId:0,
+    content:"",
+    fromAI:false
+  };
   return (
     <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/3 w-1/3 h-full overflow-scroll">
       <h2 className="text-xl font-bold mb-4">Transcript</h2>
@@ -25,8 +40,16 @@ export default function LiveInterviewTranscript({
           {transcripts ? (
            <div className="w-full">
            {transcripts.map((message, index) => (
-             <DisplayMessage key={index} message={message} />
+             <DisplayMessage key={index} message={message} loading= {false} />
            ))}
+
+           {
+            loadingMessage && (<DisplayMessage key={-1} message={userLoadingMessage} loading={true}></DisplayMessage>)
+           }
+           {
+            loadingInitial && (<DisplayMessage key={-2} message={aiLoadingMessage} loading={true}></DisplayMessage>)
+           }
+
          </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full w-full">

@@ -165,7 +165,7 @@ export default function VideoRecord({
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream.current;
         videoRef.current.muted = true;
-        videoRef.current.play();
+        await videoRef.current.play();
       }
 
       const recordedChunks = await handleStream(mediaStream.current);

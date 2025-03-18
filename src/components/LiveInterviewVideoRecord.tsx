@@ -1,10 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { send } from "process";
 interface LiveInterviewVideoRecordProps {
   setBlob: (blob: Blob) => void;
-  sendMessage: (blob:Blob) => void;
+  sendMessage: (blob: Blob) => void;
   endInterview: (videoChunks: any[]) => void;
   startInterview: () => void;
   videoLink: string;
@@ -25,24 +25,38 @@ export default function LiveInterviewVideoRecord({
 
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const mediaStream = useRef<MediaStream | null>(null);
+
   const vad = useMicVAD({
     startOnLoad: false,
-    redemptionFrames:20,
-    onSpeechEnd: async (audio) => {
-      
-      const wavBuffer = utils.encodeWAV(audio)
+    redemptionFrames: 20,
+    onFrameProcessed(probabilities, frame) {
+      if (probabilities.isSpeech > 0.8) {
+        const rms = getAmplitudeRMS();
 
+        if (circleRef.current) {
+          const scale = Math.min(1 + rms * 100,1.4)
+          circleRef.current.style.transform = `scale(${scale})`;
+        }
+        console.log("rms is ", rms);
+      } else {
+        if (circleRef.current) {
+          circleRef.current.style.transform = `scale(${1})`;
+        }
+      }
+    },
+    onSpeechEnd: async (audio) => {
+      const wavBuffer = utils.encodeWAV(audio);
 
       const recordedBlob = convertDataToBlob([wavBuffer]);
-  
-      
 
-      setBlob(recordedBlob)
+      setBlob(recordedBlob);
       await sendMessage(recordedBlob);
-      
     },
-  })
-  // for silence check streams( easier to extract audio only out of)
+  });
+
+  const [seconds, setSeconds] = useState("00");
+  const [minutes, setMinutes] = useState("00");
+  const [numSeconds, setNumSeconds] = useState(0);
 
   // State variables
   const [recording, setRecording] = useState(false);
@@ -55,13 +69,53 @@ export default function LiveInterviewVideoRecord({
   const lastVolume = useRef<number>(0);
   const lastSpokeTime = useRef<number>(0);
 
+  const circleRef = useRef<HTMLDivElement>(null);
+
   const MAX_INTERVIEW_LENGTH = 300;
   const CHECK_INTERVAL = 200;
   let SILENCE_THRESHOLD = 0.01;
   const SILENCE_THRESHOLD_MULTIPLIER = 2.8;
   const SILENCE_DURATION_TARGET = 800; // 800 ms
-  const DECAY_FACTOR = 0.60; // make volume drops faster if they stop making noise
+  const timeoutId = useRef<NodeJS.Timeout | null>(null);
+  const intervalId = useRef<NodeJS.Timeout | null>(null);
+
+
+  // clean up interval
+    useEffect(() => {
+      return () => {
+        if (intervalId.current) {
+          clearInterval(intervalId.current);
+        }
+      };
+    }, []);
+
+  useEffect(() => {
+      setHasVideo(false);
+
   
+      const getVideo = async () => {
+        if (videoRef.current) {
+          videoRef.current.pause();
+  
+          if (videoLink && videoLink.length > 0) {
+            // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
+           // videoRef.current.src = await getVideoUrl(videoLink);
+            videoRef.current.load();
+            videoRef.current.currentTime = 0;
+            videoRef.current.muted = false;
+          } else if (!videoLink || videoLink.length === 0) {
+            setHasVideo(false);
+          }
+        }
+  
+        return () => {
+          if (mediaRecorder.current) {
+            stopRecording();
+          }
+        };
+      };
+      getVideo();
+    }, [videoLink]);
 
   const handleStream = async (stream: MediaStream) => {
     mediaRecorder.current = new MediaRecorder(stream as MediaStream);
@@ -69,10 +123,11 @@ export default function LiveInterviewVideoRecord({
     if (mediaRecorder.current) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any[] = [];
+    
 
       mediaRecorder.current.ondataavailable = (event) => data.push(event.data);
 
-      mediaRecorder.current.start();
+    //  mediaRecorder.current.start();
       // when the onstop event is fired, resolve, if theres an error reject.
       const stopped = new Promise((resolve, reject) => {
         if (mediaRecorder.current) {
@@ -83,6 +138,16 @@ export default function LiveInterviewVideoRecord({
       });
 
       // force stop recording after maximum time as specified by timeout
+      timeoutId.current = setTimeout(() => {
+        if (
+          mediaRecorder.current &&
+          mediaRecorder.current.state === "recording"
+        ) {
+          mediaRecorder.current.stop();
+
+          endInterview(data);
+        }
+      }, MAX_INTERVIEW_LENGTH);
 
       // wait until its stopped
       await stopped;
@@ -102,19 +167,37 @@ export default function LiveInterviewVideoRecord({
     try {
       setRecording(true);
       setHasVideo(true);
+      setMinutes("00");
+      setSeconds("00");
       mediaStream.current = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
       vad.start();
+      // set timer
+      intervalId.current = setInterval(() => {
+        setNumSeconds((prevNumSeconds) => {
+          const newNumSeconds = prevNumSeconds + 1;
+          setSeconds((newNumSeconds % 60).toString().padStart(2, "0"));
+          setMinutes(
+            Math.floor(newNumSeconds / 60)
+              .toString()
+              .padStart(2, "0")
+          );
+          return newNumSeconds;
+        });
+      }, 1000);
 
       if (videoRef.current && mediaStream.current) {
         videoRef.current.srcObject = mediaStream.current;
         videoRef.current.muted = true;
-        videoRef.current.play();
+        await videoRef.current.play();
       }
-       // we switch to VAD for now, keep other code in case we cant use that library for some reason
-     // initializeSilenceDetection();
+      // we switch to VAD for now, keep other code in case we cant use that library for some reason
+      // initializeSilenceDetection();
+      // for the animated speaking pulse, to make it change based on volume
+      initializeAudioAnalyzer();
+
 
       const recordedChunks = await handleStream(mediaStream.current);
 
@@ -135,78 +218,97 @@ export default function LiveInterviewVideoRecord({
     }
   };
 
+  const stopRecording = () => {
+    if (mediaStream.current) {
+      mediaStream.current.getTracks().forEach((track) => track.stop());
+    }
+
+    if (intervalId.current) {
+      clearInterval(intervalId.current);
+    }
+    if (timeoutId.current) {
+      clearTimeout(timeoutId.current);
+    }
+    
+    setRecording(false);
+  
+  };
+
+  const initializeAudioAnalyzer = () => {
+    const audioContext = new AudioContext();
+    audioContextRef.current = audioContext;
+    const source = audioContext.createMediaStreamSource(
+      mediaStream.current as MediaStream
+    );
+    const analyser = audioContext.createAnalyser();
+
+    analyser.fftSize = 1024; // Increased for better frequency analysis
+    source.connect(analyser);
+
+    analyserRef.current = analyser;
+  };
+
   const initializeSilenceDetection = async () => {
     const audioContext = new AudioContext();
     audioContextRef.current = audioContext;
-    const source = audioContext.createMediaStreamSource(mediaStream.current as MediaStream);
+    const source = audioContext.createMediaStreamSource(
+      mediaStream.current as MediaStream
+    );
     const analyser = audioContext.createAnalyser();
-  
+
     analyser.fftSize = 1024; // Increased for better frequency analysis
     source.connect(analyser);
-  
+
     analyserRef.current = analyser;
     await preWarmMicrophone(300);
     const avgBackgroundNoise = await calibrateForBackgroundNoise(500);
     SILENCE_THRESHOLD = avgBackgroundNoise * SILENCE_THRESHOLD_MULTIPLIER; // Increase threshold multiplier
-  
-    
-  
+
     checkSilence();
   };
 
   const preWarmMicrophone = (duration = 300): Promise<void> => {
     return new Promise((resolve) => setTimeout(resolve, duration));
   };
-  
+
   const calibrateForBackgroundNoise = (duration = 300): Promise<number> => {
     const startTime = performance.now();
     const noiseSamples: number[] = [];
-  
+
     return new Promise((resolve) => {
       const sampleNoise = () => {
         noiseSamples.push(getAmplitudeRMS());
         // remove first 3 to account for mic warming up(may need adjustments)
-       
-  
-        if (performance.now() - startTime < duration) {
-          requestAnimationFrame(sampleNoise)
-        } else {
-          
-          // filter out initial 0's/ quietness, even if it really is just mostly 0, this wont effect the avg too much since its default 0
-          noiseSamples.splice(0,3)
 
-        
+        if (performance.now() - startTime < duration) {
+          requestAnimationFrame(sampleNoise);
+        } else {
+          // filter out initial 0's/ quietness, even if it really is just mostly 0, this wont effect the avg too much since its default 0
+          noiseSamples.splice(0, 3);
+
           const noiseSampleAvg =
-            noiseSamples.reduce((sum, sample) => sum + sample, 0) / noiseSamples.length;
+            noiseSamples.reduce((sum, sample) => sum + sample, 0) /
+            noiseSamples.length;
           resolve(noiseSampleAvg);
         }
       };
-  
+
       sampleNoise();
     });
   };
-  
+
   const getAmplitudeRMS = (): number => {
-    const amplitudeArr = new Uint8Array(analyserRef.current?.frequencyBinCount ?? 0);
-    analyserRef.current?.getByteFrequencyData(amplitudeArr);
-  
-    // Calculate raw RMS from frequency data
-    const rawRMS = Math.sqrt(
-      amplitudeArr.reduce((sum, amp) => sum + amp ** 2, 0) / amplitudeArr.length
+    const amplitudeArr = new Float32Array(
+      analyserRef.current?.frequencyBinCount ?? 0
     );
-  
-    // Dynamically choose a smoothing factor:
-    // - Use a lower factor (faster decay) if rawRMS is lower than the smoothed value.
-    // - Use a higher factor (slower increase) if rawRMS is higher.
-    const decayFactor = rawRMS < lastVolume.current ? 0.5 : 0.9;
-  
-    // Apply exponential smoothing: when falling, the value drops faster; when rising, it climbs slower.
-    const smoothedRMS = lastVolume.current * decayFactor + rawRMS * (1 - decayFactor);
-    lastVolume.current = smoothedRMS;
-  
-    return smoothedRMS;
+    analyserRef.current?.getFloatTimeDomainData(amplitudeArr);
+
+    // Calculate raw RMS from frequency data (get)
+    const rawRMS =
+      amplitudeArr.reduce((sum, amp) => sum + amp, 0) / amplitudeArr.length;
+    return Math.abs(rawRMS) ?? 0;
   };
-  
+
   const checkSilence = () => {
     const now = performance.now();
     if (now - lastCheckTime.current < CHECK_INTERVAL) {
@@ -214,42 +316,40 @@ export default function LiveInterviewVideoRecord({
       return;
     }
     lastCheckTime.current = now;
-  
+
     const avg = getAmplitudeRMS();
-  
-  
+
     // **If volume suddenly drops 60% within 500ms, assume silence**
     if (avg < lastVolume.current * 0.4 && now - lastSpokeTime.current < 500) {
-     
       lastSpokeTime.current = now - SILENCE_DURATION_TARGET; // Force earlier silence detection
     }
-  
+
     if (avg < SILENCE_THRESHOLD) {
       if (!silenceStartTimeRef.current) {
         silenceStartTimeRef.current = Date.now();
       }
       if (Date.now() - silenceStartTimeRef.current >= SILENCE_DURATION_TARGET) {
-      
         silenceStartTimeRef.current = null;
       }
     } else {
       silenceStartTimeRef.current = null; // Reset if speaking
       lastSpokeTime.current = now;
     }
-  
+
     setTimeout(checkSilence, CHECK_INTERVAL);
   };
   // Mock function to handle starting a live interview session
   const startLiveInterview = async () => {
     await startInterview();
     setRecording(true);
-    startRecording();
+    await startRecording();
 
     // Additional logic for starting the actual recording will be added later
   };
 
   // Mock function to end live interview
   const endLiveInterview = async () => {
+    console.log("end");
     setRecording(false);
     setLoadingTranscript(true);
     await endInterview([]);
@@ -272,6 +372,41 @@ export default function LiveInterviewVideoRecord({
           <p className="text">Press start recording to show video</p>
         )}
       </div>
+      {hasVideo && (
+        <div className="mt-3 flex gap-10">
+          <div>
+          <p>Interview Time</p>
+          <div>
+            <span>{minutes}</span>:<span>{seconds}</span>
+          </div>
+          </div>
+
+          <div className="flex items-center justify-center relative mt-1 mb-1 ml-5">
+            {/* expanding/contracting circle */}
+            <div
+              ref={circleRef}
+              className="absolute w-16 h-16 border-2 border-green-500 rounded-full transition-transform duration-100"
+            ></div>
+            {/* microphone icon from https://heroicons.com/ */}
+            <div className="relative z-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex space-x-4 mt-4">
         {!recording ? (
