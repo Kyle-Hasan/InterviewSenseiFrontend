@@ -30,8 +30,8 @@ export default function LiveInterviewTranscript({
     fromAI:false
   };
   return (
-    <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/3 w-1/3 h-full overflow-scroll">
-      <h2 className="text-xl font-bold mb-4">Transcript</h2>
+    <div className="w-full">
+      <h2 className="text-xl font-bold mb-4 text-center">Transcript</h2>
       
       {loadingTranscript ? (
         <Spinner />

@@ -169,11 +169,29 @@ export default function LiveInterviewVideoRecord({
       setHasVideo(true);
       setMinutes("00");
       setSeconds("00");
-      mediaStream.current = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
+  
+      let mediaConstraints = { video: true, audio: true };
+      let stream = null;
+      //first try with audio and video, if that fails, fall back to only audio, if that doesnt work just give up
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      } catch (videoAudioError) {
+        console.warn("Video and audio not available, trying audio-only...");
+  
+        try {
+          mediaConstraints = { video: false, audio: true };
+          stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          setHasVideo(false);
+        } catch (audioError) {
+          console.error("No audio or video available:", audioError);
+          setRecording(false);
+          return;
+        }
+      }
+  
+      mediaStream.current = stream;
       vad.start();
+  
       // set timer
       intervalId.current = setInterval(() => {
         setNumSeconds((prevNumSeconds) => {
@@ -187,27 +205,29 @@ export default function LiveInterviewVideoRecord({
           return newNumSeconds;
         });
       }, 1000);
-
+  
       if (videoRef.current && mediaStream.current) {
-        videoRef.current.srcObject = mediaStream.current;
-        videoRef.current.muted = true;
-        await videoRef.current.play();
+        if (mediaConstraints.video) {
+          videoRef.current.srcObject = mediaStream.current;
+          videoRef.current.muted = true;
+          await videoRef.current.play();
+        }
       }
+  
       // we switch to VAD for now, keep other code in case we cant use that library for some reason
       // initializeSilenceDetection();
       // for the animated speaking pulse, to make it change based on volume
       initializeAudioAnalyzer();
-
-
+  
       const recordedChunks = await handleStream(mediaStream.current);
-
+  
       // make file for video
       if (videoRef.current && recordedChunks) {
         const recordedBlob = convertDataToBlob(recordedChunks);
-
+  
         const url = URL.createObjectURL(recordedBlob);
         setBlob(recordedBlob);
-
+  
         videoRef.current.src = url;
         videoRef.current.srcObject = null;
         videoRef.current.controls = true;
@@ -217,6 +237,7 @@ export default function LiveInterviewVideoRecord({
       setRecording(false);
     }
   };
+  
 
   const stopRecording = () => {
     if (mediaStream.current) {
@@ -372,7 +393,7 @@ export default function LiveInterviewVideoRecord({
           <p className="text">Press start recording to show video</p>
         )}
       </div>
-      {hasVideo && (
+      {recording && (
         <div className="mt-3 flex gap-10">
           <div>
           <p>Interview Time</p>

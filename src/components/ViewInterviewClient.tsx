@@ -22,7 +22,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
       ) {
         const response = await axiosInstance.get(interview.resumeLink);
         
-        if(response.data) {
+        if(response?.data) {
         setResumeUrl(response.data.result);
         }
       } else {
@@ -80,16 +80,33 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
       `/interviews/${interview.id}/questions/${interview.questions[0].id}`
     );
   };
+
+  const goToLive = ()=> {
+    router.replace(
+      `/liveInterview/${interview.id}`
+    )
+  }
   return (
     <div className="flex flex-col h-full items-center justify-center">
-      <Button
+      {!interview.isLive ? 
+      (<Button
         onClick={() => {
           goToQuestions();
         }}
         className="ml-4 m-2"
       >
-        {"Go to Questions"}{" "}
-      </Button>
+        {"Go to Questions"}
+      </Button>)
+      : (<Button
+        onClick={() => {
+          goToLive();
+        }}
+        className="ml-4 m-2"
+      >
+        {"View Interview"}
+      </Button>)
+
+    }
 
       <div className="w-full">
         <InterviewForm
@@ -98,7 +115,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
           initialResumeName={interview.resumeLink ? convertUrlToName() : ""}
           initialData={initialData}
           disabled={true}
-        ></InterviewForm>{" "}
+        ></InterviewForm>
       </div>
     </div>
   );

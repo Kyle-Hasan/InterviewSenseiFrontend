@@ -61,7 +61,12 @@ export default function VideoRecord({
     
     if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true") {
       const response = await axiosInstance.get(videoLink);
+      if(response?.data) {
       return response.data.result;
+      }
+      else {
+        return "";
+      }
     } else {
       return Promise.resolve(videoLink);
     }
