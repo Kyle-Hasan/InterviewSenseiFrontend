@@ -57,7 +57,7 @@ export default function VideoRecord({
   }, []);
     // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
 
-  const getVideoUrl = async (videoLink: string): Promise<string> => {
+  const getVideoLink = async (videoLink: string): Promise<string> => {
     
     if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true") {
       const response = await axiosInstance.get(videoLink);
@@ -82,7 +82,7 @@ export default function VideoRecord({
 
         if (videoLink && videoLink.length > 0) {
           // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
-          videoRef.current.src = await getVideoUrl(videoLink);
+          videoRef.current.src = await getVideoLink(videoLink);
           videoRef.current.load();
           videoRef.current.currentTime = 0;
           videoRef.current.muted = false;
@@ -174,6 +174,7 @@ export default function VideoRecord({
       }
 
       const recordedChunks = await handleStream(mediaStream.current);
+  
 
       // make file for video
       if (videoRef.current && recordedChunks) {

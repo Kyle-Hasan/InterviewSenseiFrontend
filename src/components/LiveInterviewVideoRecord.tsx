@@ -2,21 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { send } from "process";
+import axiosInstance from "@/app/utils/axiosInstance";
 interface LiveInterviewVideoRecordProps {
-  setBlob: (blob: Blob) => void;
+ 
   sendMessage: (blob: Blob) => void;
-  endInterview: (videoChunks: any[]) => void;
-  startInterview: () => void;
+  endInterview: (blob:Blob) => void;
+  
   videoLink: string;
   setUnsavedVideo: (unsavedVideo: boolean) => void;
+  interviewedStarted:boolean,
+  interviewEnded:boolean
 }
 export default function LiveInterviewVideoRecord({
   sendMessage,
   endInterview,
-  startInterview,
   videoLink,
   setUnsavedVideo,
-  setBlob,
+  interviewedStarted,
+  interviewEnded
 }: LiveInterviewVideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -49,7 +52,6 @@ export default function LiveInterviewVideoRecord({
 
       const recordedBlob = convertDataToBlob([wavBuffer]);
 
-      setBlob(recordedBlob);
       await sendMessage(recordedBlob);
     },
   });
@@ -70,8 +72,8 @@ export default function LiveInterviewVideoRecord({
   const lastSpokeTime = useRef<number>(0);
 
   const circleRef = useRef<HTMLDivElement>(null);
-
-  const MAX_INTERVIEW_LENGTH = 300;
+  // 5 minutes
+  const MAX_INTERVIEW_LENGTH = 5 * 60 * 1000;
   const CHECK_INTERVAL = 200;
   let SILENCE_THRESHOLD = 0.01;
   const SILENCE_THRESHOLD_MULTIPLIER = 2.8;
@@ -79,6 +81,38 @@ export default function LiveInterviewVideoRecord({
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
   const intervalId = useRef<NodeJS.Timeout | null>(null);
 
+  // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
+  
+    const getVideoLink = async (videoLink: string): Promise<string> => {
+      
+      if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true") {
+        const response = await axiosInstance.get(videoLink);
+        if(response?.data) {
+        return response.data.result;
+        }
+        else {
+          return "";
+        }
+      } else {
+        return Promise.resolve(videoLink);
+      }
+    };
+
+
+
+  useEffect(()=> {
+    if(interviewedStarted) {
+      startRecording()
+    }
+  },[interviewedStarted])
+
+  useEffect(()=> {
+    
+      if(interviewEnded) {
+        
+        stopRecording();
+      }
+  }, [interviewEnded])
 
   // clean up interval
     useEffect(() => {
@@ -94,12 +128,13 @@ export default function LiveInterviewVideoRecord({
 
   
       const getVideo = async () => {
+        
         if (videoRef.current) {
           videoRef.current.pause();
   
           if (videoLink && videoLink.length > 0) {
             // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
-           // videoRef.current.src = await getVideoUrl(videoLink);
+            videoRef.current.src = await getVideoLink(videoLink);
             videoRef.current.load();
             videoRef.current.currentTime = 0;
             videoRef.current.muted = false;
@@ -119,23 +154,27 @@ export default function LiveInterviewVideoRecord({
 
   const handleStream = async (stream: MediaStream) => {
     mediaRecorder.current = new MediaRecorder(stream as MediaStream);
+   
     // uses events from mediaRecorder.current to function
     if (mediaRecorder.current) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any[] = [];
+      mediaRecorder.current.start();
     
-
+      
       mediaRecorder.current.ondataavailable = (event) => data.push(event.data);
 
     //  mediaRecorder.current.start();
       // when the onstop event is fired, resolve, if theres an error reject.
       const stopped = new Promise((resolve, reject) => {
+        
         if (mediaRecorder.current) {
           mediaRecorder.current.onstop = resolve;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           mediaRecorder.current.onerror = (event: any) => reject(event.name);
         }
       });
+
 
       // force stop recording after maximum time as specified by timeout
       timeoutId.current = setTimeout(() => {
@@ -144,13 +183,14 @@ export default function LiveInterviewVideoRecord({
           mediaRecorder.current.state === "recording"
         ) {
           mediaRecorder.current.stop();
-
-          endInterview(data);
         }
       }, MAX_INTERVIEW_LENGTH);
 
+      ;
+
       // wait until its stopped
       await stopped;
+      ;
 
       return data;
     }
@@ -158,8 +198,8 @@ export default function LiveInterviewVideoRecord({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const convertDataToBlob = (data: any[]) => {
-    return new Blob(data, { type: "audio/wav" });
+  const convertDataToBlob = (data: any[], audio = true) => {
+    return new Blob(data, { type: audio ? "audio/wav" : "video/webm" });
   };
 
   const startRecording = async () => {
@@ -213,21 +253,29 @@ export default function LiveInterviewVideoRecord({
           await videoRef.current.play();
         }
       }
+      
   
       // we switch to VAD for now, keep other code in case we cant use that library for some reason
       // initializeSilenceDetection();
       // for the animated speaking pulse, to make it change based on volume
       initializeAudioAnalyzer();
   
+      // records until its stopped, afterwards process video propertly
+      
       const recordedChunks = await handleStream(mediaStream.current);
+      
+      
   
       // make file for video
       if (videoRef.current && recordedChunks) {
-        const recordedBlob = convertDataToBlob(recordedChunks);
-  
+       
+        const recordedBlob = convertDataToBlob(recordedChunks ?? [],false);
+      endInterview(recordedBlob);
+
+        
+        
         const url = URL.createObjectURL(recordedBlob);
-        setBlob(recordedBlob);
-  
+      
         videoRef.current.src = url;
         videoRef.current.srcObject = null;
         videoRef.current.controls = true;
@@ -240,9 +288,12 @@ export default function LiveInterviewVideoRecord({
   
 
   const stopRecording = () => {
-    if (mediaStream.current) {
-      mediaStream.current.getTracks().forEach((track) => track.stop());
-    }
+   
+    
+    mediaRecorder.current?.stop();
+    
+    
+    console.log(mediaRecorder.current?.state)
 
     if (intervalId.current) {
       clearInterval(intervalId.current);
@@ -360,34 +411,15 @@ export default function LiveInterviewVideoRecord({
     setTimeout(checkSilence, CHECK_INTERVAL);
   };
   // Mock function to handle starting a live interview session
-  const startLiveInterview = async () => {
-    await startInterview();
-    setRecording(true);
-    await startRecording();
 
-    // Additional logic for starting the actual recording will be added later
-  };
 
-  // Mock function to end live interview
-  const endLiveInterview = async () => {
-    console.log("end");
-    setRecording(false);
-    setLoadingTranscript(true);
-    await endInterview([]);
 
-    // Simulate processing delay
-    setTimeout(() => {
-      setTranscript(
-        "This is a placeholder transcript for the interview. The actual transcript will be generated from the recorded session."
-      );
-      setLoadingTranscript(false);
-    }, 2000);
-  };
+  
   return (
-    <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/5 w-1/3 h-full mx-5">
+    <div className="">
       <h2 className="text-xl font-bold mb-4">Live Interview</h2>
       <div className="">
-        {hasVideo || (videoLink && videoLink.length > 0) ? (
+        {hasVideo || (videoLink) ? (
           <video className="" ref={videoRef} controls muted></video>
         ) : (
           <p className="text">Press start recording to show video</p>
@@ -429,24 +461,7 @@ export default function LiveInterviewVideoRecord({
         </div>
       )}
 
-      <div className="flex space-x-4 mt-4">
-        {!recording ? (
-          <Button
-            onClick={startLiveInterview}
-            className="text-white px-4 py-2 rounded-md"
-            disabled={loadingTranscript}
-          >
-            Start Interview
-          </Button>
-        ) : (
-          <Button
-            onClick={endLiveInterview}
-            className="bg-red-500 text-white px-4 py-2 rounded-md"
-          >
-            End Interview
-          </Button>
-        )}
-      </div>
+      
     </div>
   );
 }

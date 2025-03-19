@@ -13,7 +13,7 @@ export default function LiveInterview() {
       {interviewId && (
         <LiveInterviewRecord 
           interviewId={+interviewId}
-          videoLink=''
+         
           
         />
       )}

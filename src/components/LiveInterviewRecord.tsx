@@ -14,13 +14,14 @@ import { interviewFeedback } from "@/app/types/interviewFeedback";
 
 interface LiveInterviewRecordProps {
   interviewId: number;
-  videoLink: string;
+
 }
 
 export default function LiveInterviewRecord({
   interviewId,
-  videoLink,
 }: LiveInterviewRecordProps) {
+
+  
   // State variables
 
   const [loadingTranscript, setLoadingTranscript] = useState(false);
@@ -28,30 +29,32 @@ export default function LiveInterviewRecord({
   const [feedback, setFeedback] = useState<interviewFeedback | null>(null);
 
   const [unsavedVideo, setUnsavedVideo] = useState(false);
-  const [blob, setBlob] = useState<Blob>();
+
   const [loadingMessage, setLoadingMessage] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(false);
+  const [interviewStarted, setInterviewStarted] = useState(false);
+  const [interviewEnded, setInterviewEnded] = useState(false);
+  const [videoLink,setVideoLink] = useState('')
 
   const fetchData = async () => {
-    const { data } = await axiosInstance.get<{feedback:interviewFeedback; messages:message[]}>(`/Interview/getFeedbackAndMessages?interviewId=${interviewId}`);
+    const { data } = await axiosInstance.get<{
+      feedback: interviewFeedback;
+      messages: message[];
+      videoLink?: string
+    }>(`/Interview/getFeedbackAndMessages?interviewId=${interviewId}`);
     setTranscripts(data.messages);
-    setFeedback(data.feedback)
+    setFeedback(data.feedback);
+    
+    setVideoLink(data.videoLink ?? "") ;
     return data;
   };
   const { data, isLoading, error } = useQuery({
-    queryKey: ['interviewFeedbackandMessages',interviewId],
+    queryKey: ["interviewFeedbackandMessages", interviewId],
     queryFn: fetchData,
   });
 
   if (isLoading) return <Spinner></Spinner>;
   if (error) return <div>Error: {error.message}</div>;
-
-
-  
-
-  const convertDataToBlob = (data: any[]) => {
-    return new Blob(data, { type: "video/webm" });
-  };
 
   const textToSpeech = (text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -103,13 +106,10 @@ export default function LiveInterviewRecord({
     }
   };
 
-  const endInterview = async (videoChunks: any[]) => {
-    const recordedBlob = convertDataToBlob(videoChunks);
-    setBlob(recordedBlob);
-   
-
+  const endInterview = async (blob: Blob) => {
+    
     const formData = new FormData();
-    formData.append("video", recordedBlob, "video.webm");
+    formData.append("video", blob, "video.webm");
     formData.append("interviewId", interviewId.toString());
 
     const response = await axiosInstance.post<interviewFeedback>(
@@ -128,6 +128,7 @@ export default function LiveInterviewRecord({
   };
 
   const startInterview = async () => {
+    setInterviewStarted(true);
     setLoadingInitial(true);
 
     try {
@@ -143,6 +144,9 @@ export default function LiveInterviewRecord({
     }
   };
 
+
+   
+
   return (
     <div className="flex items-center flex-col justify-center h-screen w-full">
       <h2 className="text-2xl font-bold text-center mb-5 w-full">
@@ -151,15 +155,39 @@ export default function LiveInterviewRecord({
 
       <div className="flex justify-center items-start space-x-10 w-full h-2/3 xl:h-[80%] lg:h-[78%]">
         {/* Live Video Record Section */}
-
+        <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/5 w-1/3 h-full mx-5">
         <LiveInterviewVideoRecord
           setUnsavedVideo={setUnsavedVideo}
-          setBlob={setBlob}
           sendMessage={sendMessage}
           endInterview={endInterview}
-          startInterview={startInterview}
-          videoLink=""
+          videoLink={videoLink}
+          interviewEnded={interviewEnded}
+          interviewedStarted={interviewStarted}
         ></LiveInterviewVideoRecord>
+
+        <div className="flex space-x-4 mt-4">
+          {!interviewStarted ? (
+            <Button
+              onClick={() => {
+                startInterview();
+              }}
+              className="text-white px-4 py-2 rounded-md"
+              disabled={loadingTranscript}
+            >
+              Start Interview
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                setInterviewEnded(true);
+              }}
+              className="bg-red-500 text-white px-4 py-2 rounded-md"
+            >
+              End Interview
+            </Button>
+          )}
+          </div>
+        </div>
 
         {/* Transcript Section */}
 
