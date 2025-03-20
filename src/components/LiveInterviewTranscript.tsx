@@ -1,6 +1,6 @@
 
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Spinner from '@/components/Spinner';
 import { message } from '@/app/types/message';
 import DisplayMessage from './DisplayMessage';
@@ -29,6 +29,22 @@ export default function LiveInterviewTranscript({
     content:"",
     fromAI:false
   };
+
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [transcripts,loadingInitial,loadingMessage]);
+
+
+
+
   return (
     <div className="w-full">
       <h2 className="text-xl font-bold mb-4 text-center">Transcript</h2>
@@ -50,6 +66,8 @@ export default function LiveInterviewTranscript({
             loadingInitial && (<DisplayMessage key={-2} message={aiLoadingMessage} loading={true}></DisplayMessage>)
            }
 
+           
+
          </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full w-full">
@@ -60,6 +78,7 @@ export default function LiveInterviewTranscript({
           )}
         </>
       )}
+       <div ref={messagesEndRef} />
     </div>
   );
 }

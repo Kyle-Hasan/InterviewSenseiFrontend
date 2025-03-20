@@ -11,6 +11,8 @@ import { messageResponse } from "@/app/types/messageResponse";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import LiveInterviewTabs from "./LiveInterviewTabs";
 import { interviewFeedback } from "@/app/types/interviewFeedback";
+import { Switch } from "./ui/switch";
+import { Label } from "./ui/label";
 
 interface LiveInterviewRecordProps {
   interviewId: number;
@@ -34,7 +36,12 @@ export default function LiveInterviewRecord({
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [interviewEnded, setInterviewEnded] = useState(false);
-  const [videoLink,setVideoLink] = useState('')
+  const [videoLink,setVideoLink] = useState('');
+  // true for video, false for text
+  const [videoMode,setVideMode] = useState(true);
+  const [playTextToSpeech, setPlayTextToSpeech] = useState(true);
+  const [showTranscript,setShowTranscript] = useState(true);
+  const [loadingFeedback,setLoadingFeedback] = useState(false);
 
   const fetchData = async () => {
     const { data } = await axiosInstance.get<{
@@ -62,9 +69,8 @@ export default function LiveInterviewRecord({
   };
 
   const sendMessage = async (blob: Blob) => {
-    if (!blob) {
-      return;
-    }
+    
+    setShowTranscript(true);
 
     try {
       const formData = new FormData();
@@ -97,8 +103,12 @@ export default function LiveInterviewRecord({
       };
 
       setTranscripts([...transcripts, userMessage, aiMessage]);
+      if(playTextToSpeech) {
       textToSpeech(aiMessage.content);
+      }
       setLoadingMessage(false);
+      // set false so next trigger works
+      setShowTranscript(false);
     } catch (error) {
       console.error(error);
     } finally {
@@ -107,6 +117,9 @@ export default function LiveInterviewRecord({
   };
 
   const endInterview = async (blob: Blob) => {
+
+    try{
+    setLoadingFeedback(true);
     
     const formData = new FormData();
     formData.append("video", blob, "video.webm");
@@ -123,6 +136,15 @@ export default function LiveInterviewRecord({
     );
 
     setFeedback(response.data);
+  }
+
+  catch(error) {
+    console.error(error)
+  }
+
+  finally {
+    setLoadingFeedback(false)
+  }
 
     //  queryClient.setQueryData(["interviewFeedback", interviewId], response.data);
   };
@@ -130,32 +152,58 @@ export default function LiveInterviewRecord({
   const startInterview = async () => {
     setInterviewStarted(true);
     setLoadingInitial(true);
-
+    setShowTranscript(true);
+    debugger
     try {
+      
       const initialMessage = await axiosInstance.get<message>(
         `/Message/initalizeInterview/${interviewId}`
       );
+      if(playTextToSpeech) {
       textToSpeech(initialMessage.data.content);
+      }
       setTranscripts([...transcripts, initialMessage.data]);
+      
+     
     } catch (error) {
       console.log(error);
     } finally {
       setLoadingInitial(false);
+      // set trigger to false so that it can be used again
+      setShowTranscript(false);
     }
   };
+
+  
 
 
    
 
   return (
     <div className="flex items-center flex-col justify-center h-screen w-full">
+      <div>
       <h2 className="text-2xl font-bold text-center mb-5 w-full">
         Live Interview
       </h2>
+      
+      </div>
 
       <div className="flex justify-center items-start space-x-10 w-full h-2/3 xl:h-[80%] lg:h-[78%]">
         {/* Live Video Record Section */}
         <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/5 w-1/3 h-full mx-5">
+        <div className="flex gap-5">
+        <div className="flex items-center space-x-2">
+          <span>Text Mode</span>
+          <Switch id="voice-mode " className="mx-1" />
+          <span>Voice Mode</span>
+          </div>
+
+          <div className="flex items-center space-x-1">
+        
+          <Switch id="voice-mode " className="" checked={playTextToSpeech} onCheckedChange={(checked)=> {debugger; setPlayTextToSpeech(checked)}} />
+          <span>Play text to speech</span>
+          </div>
+          </div>
         <LiveInterviewVideoRecord
           setUnsavedVideo={setUnsavedVideo}
           sendMessage={sendMessage}
@@ -181,6 +229,7 @@ export default function LiveInterviewRecord({
               onClick={() => {
                 setInterviewEnded(true);
               }}
+              disabled={interviewEnded}
               className="bg-red-500 text-white px-4 py-2 rounded-md"
             >
               End Interview
@@ -200,6 +249,8 @@ export default function LiveInterviewRecord({
               loadingMessage={loadingMessage}
               transcripts={transcripts}
               feedback={feedback}
+              switchToTranscript={showTranscript}
+              loadingFeedback={loadingFeedback}
             ></LiveInterviewTabs>
           </>
         )}
