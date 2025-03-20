@@ -4,13 +4,14 @@ import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { send } from "process";
 import axiosInstance from "@/app/utils/axiosInstance";
 interface LiveInterviewVideoRecordProps {
-  sendMessage: (blob: Blob) => void;
+  sendMessage: (blob: Blob | null) => void;
   endInterview: (blob: Blob) => void;
 
   videoLink: string;
   setUnsavedVideo: (unsavedVideo: boolean) => void;
   interviewedStarted: boolean;
   interviewEnded: boolean;
+  voiceMode:boolean;
 }
 export default function LiveInterviewVideoRecord({
   sendMessage,
@@ -19,6 +20,7 @@ export default function LiveInterviewVideoRecord({
   setUnsavedVideo,
   interviewedStarted,
   interviewEnded,
+  voiceMode
 }: LiveInterviewVideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -58,6 +60,7 @@ export default function LiveInterviewVideoRecord({
   const [seconds, setSeconds] = useState("00");
   const [minutes, setMinutes] = useState("00");
   const [numSeconds, setNumSeconds] = useState(0);
+  
 
   // State variables
   const [recording, setRecording] = useState(false);
@@ -93,10 +96,22 @@ export default function LiveInterviewVideoRecord({
   };
 
   useEffect(() => {
-    if (interviewedStarted) {
+    debugger
+    if (interviewedStarted && !recording) {
       startRecording();
     }
   }, [interviewedStarted]);
+
+  // clean up video stuff when you have voice recordings so that nothing bad happens if you turn voice mode on again
+  useEffect(()=> {
+    if(!voiceMode) {
+      stopRecording();
+    }
+    else if(voiceMode && interviewedStarted && !recording) {
+      startRecording();
+    }
+
+  },[voiceMode])
 
   useEffect(() => {
     if (interviewEnded) {
@@ -262,7 +277,9 @@ export default function LiveInterviewVideoRecord({
   };
 
   const stopRecording = () => {
+    mediaStream.current?.getTracks().forEach((track)=> track.stop());
     mediaRecorder.current?.stop();
+    vad.pause();
 
     console.log(mediaRecorder.current?.state);
 
@@ -381,6 +398,10 @@ export default function LiveInterviewVideoRecord({
     setTimeout(checkSilence, CHECK_INTERVAL);
   };
   // Mock function to handle starting a live interview session
+  // do this instead of not rendering at all in the parent to clean up video stuff properly when leaving voice mode
+  if(!voiceMode) {
+    return <></>
+  }
 
   return (
     <div className="">

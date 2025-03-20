@@ -38,9 +38,9 @@ export default function LiveInterviewRecord({
   const [interviewEnded, setInterviewEnded] = useState(false);
   const [videoLink,setVideoLink] = useState('');
   // true for video, false for text
-  const [videoMode,setVideMode] = useState(true);
+  const [voiceMode,setVoiceMode] = useState(true);
   const [playTextToSpeech, setPlayTextToSpeech] = useState(true);
-  const [showTranscript,setShowTranscript] = useState(true);
+  const [activeTab,setActiveTab] = useState('transcript')
   const [loadingFeedback,setLoadingFeedback] = useState(false);
 
   const fetchData = async () => {
@@ -68,14 +68,21 @@ export default function LiveInterviewRecord({
     window.speechSynthesis.speak(utterance);
   };
 
-  const sendMessage = async (blob: Blob) => {
+  const sendMessage = async (blob: Blob | null,textMessage?:string) => {
     
-    setShowTranscript(true);
+    setActiveTab('transcript');
 
     try {
       const formData = new FormData();
-      formData.append("audio", blob, "audio.wav");
       formData.append("interviewId", interviewId.toString());
+      if(blob) {
+      formData.append("audio", blob, "audio.wav");
+      
+      }
+
+      else if(textMessage) {
+        formData.append("textMessage",textMessage)
+      }
 
       setLoadingMessage(true);
 
@@ -107,8 +114,8 @@ export default function LiveInterviewRecord({
       textToSpeech(aiMessage.content);
       }
       setLoadingMessage(false);
-      // set false so next trigger works
-      setShowTranscript(false);
+      
+      
     } catch (error) {
       console.error(error);
     } finally {
@@ -117,9 +124,11 @@ export default function LiveInterviewRecord({
   };
 
   const endInterview = async (blob: Blob) => {
-
+   
     try{
     setLoadingFeedback(true);
+    // switch to feedback tab
+    setActiveTab('feedback');
     
     const formData = new FormData();
     formData.append("video", blob, "video.webm");
@@ -143,6 +152,7 @@ export default function LiveInterviewRecord({
   }
 
   finally {
+    setActiveTab('feedback');
     setLoadingFeedback(false)
   }
 
@@ -150,10 +160,11 @@ export default function LiveInterviewRecord({
   };
 
   const startInterview = async () => {
+   
     setInterviewStarted(true);
     setLoadingInitial(true);
-    setShowTranscript(true);
-    debugger
+    setActiveTab('transcript');
+  
     try {
       
       const initialMessage = await axiosInstance.get<message>(
@@ -169,8 +180,7 @@ export default function LiveInterviewRecord({
       console.log(error);
     } finally {
       setLoadingInitial(false);
-      // set trigger to false so that it can be used again
-      setShowTranscript(false);
+     
     }
   };
 
@@ -194,16 +204,21 @@ export default function LiveInterviewRecord({
         <div className="flex gap-5">
         <div className="flex items-center space-x-2">
           <span>Text Mode</span>
-          <Switch id="voice-mode " className="mx-1" />
+          <Switch checked={voiceMode} onCheckedChange={(checked)=> {
+            setActiveTab('transcript');
+            setVoiceMode(checked);
+            }} id="voice-mode " className="mx-1" />
           <span>Voice Mode</span>
           </div>
 
           <div className="flex items-center space-x-1">
         
-          <Switch id="voice-mode " className="" checked={playTextToSpeech} onCheckedChange={(checked)=> {debugger; setPlayTextToSpeech(checked)}} />
+          <Switch id="voice-mode " className="" checked={playTextToSpeech} onCheckedChange={(checked)=> {setPlayTextToSpeech(checked)}} />
           <span>Play text to speech</span>
           </div>
           </div>
+
+       {/* do this instead of conditional render to clean up video stuff in this component properly when switching modes  */}
         <LiveInterviewVideoRecord
           setUnsavedVideo={setUnsavedVideo}
           sendMessage={sendMessage}
@@ -211,7 +226,9 @@ export default function LiveInterviewRecord({
           videoLink={videoLink}
           interviewEnded={interviewEnded}
           interviewedStarted={interviewStarted}
+          voiceMode={voiceMode}
         ></LiveInterviewVideoRecord>
+        
 
         <div className="flex space-x-4 mt-4">
           {!interviewStarted ? (
@@ -249,8 +266,11 @@ export default function LiveInterviewRecord({
               loadingMessage={loadingMessage}
               transcripts={transcripts}
               feedback={feedback}
-              switchToTranscript={showTranscript}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
               loadingFeedback={loadingFeedback}
+              voiceMode={voiceMode}
+              sendMessage={(textMessage:string)=> {sendMessage(null,textMessage)}}
             ></LiveInterviewTabs>
           </>
         )}

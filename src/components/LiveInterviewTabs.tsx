@@ -6,6 +6,7 @@ import LiveInterviewTranscript from "./LiveInterviewTranscript";
 import { interviewFeedback } from "@/app/types/interviewFeedback";
 import FeedbackTab from "./FeedbackTab";
 import { TabsProps } from "@radix-ui/react-tabs";
+import { sendMessage } from "@microsoft/signalr/dist/esm/Utils";
 
 interface LiveInterviewTabsProps {
   transcripts?: message[];
@@ -13,10 +14,11 @@ interface LiveInterviewTabsProps {
   loadingMessage: boolean;
   loadingInitial: boolean;
   feedback: interviewFeedback | null;
-  switchToTranscript:boolean;
-  
+  activeTab: string,
+  setActiveTab(tab:string):void,
   loadingFeedback:boolean;
-  
+  voiceMode:boolean;
+  sendMessage: (message:string)=>void;
 }
 
 export default function LiveInterviewTabs({
@@ -25,23 +27,17 @@ export default function LiveInterviewTabs({
   loadingMessage,
   loadingInitial,
   feedback,
-  switchToTranscript,
-  loadingFeedback
+  activeTab,
+  setActiveTab,
+  loadingFeedback,
+  voiceMode,
+  sendMessage
   
 }: LiveInterviewTabsProps) {
 
-    const [activeTab,setActiveTab] = useState(feedback ? "feedback" : "transcript")
+    
 
-    // change tab to feedback if changes to a non null
-    useEffect(()=> {
-        if(feedback && loadingFeedback) {
-            setActiveTab("feedback");
-        }
-        else if(switchToTranscript) {
-          setActiveTab("transcript")
-        }
-
-    }, [feedback,switchToTranscript,loadingFeedback]);
+    
 
 
     return (
@@ -61,6 +57,8 @@ export default function LiveInterviewTabs({
                 loadingInitial={loadingInitial}
                 loadingMessage={loadingMessage}
                 transcripts={transcripts}
+                voiceMode={voiceMode}
+                sendMessage={sendMessage}
               />
             )}
           </TabsContent>
