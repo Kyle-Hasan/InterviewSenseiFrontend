@@ -21,6 +21,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useInterviewStore } from "@/app/hooks/useInterviews";
 import { resume } from "@/app/types/resume";
 import { Checkbox } from "./ui/checkbox";
+import { interviewType } from "@/app/types/interviewType";
 
 interface interviewFormData {
   resume: File | null;
@@ -31,7 +32,7 @@ interface interviewFormData {
   name: string;
   secondsPerAnswer: number;
   additionalDescription: string;
-  isLive:boolean;
+  type:interviewType
 }
 
 interface interviewFormProps {
@@ -70,7 +71,7 @@ export const InterviewForm = ({
     e.preventDefault();
     setErrors("");
 
-    if (!formData.isLive && (formData.numberOfBehavioral + formData.numberOfTechnical === 0)) {
+    if (formData.type == interviewType.NonLive && (formData.numberOfBehavioral + formData.numberOfTechnical === 0)) {
       setErrors("Need more than 1 question");
       return;
     }
@@ -79,7 +80,7 @@ export const InterviewForm = ({
       setErrors("Interview needs a name");
       return;
     }
-    if (formData.secondsPerAnswer >= 300 || formData.secondsPerAnswer < 10) {
+    if (formData.type == interviewType.NonLive && (formData.secondsPerAnswer >= 300 || formData.secondsPerAnswer < 10)) {
       setErrors("Seconds per answer must be between 10 and 300 ");
       return;
     }
@@ -127,7 +128,7 @@ export const InterviewForm = ({
       
 
       // an interview that is live has no questions to add
-      if(!interview.isLive) {
+      if(interview.type === interviewType.NonLive) {
       
       // set questions in the cache so we can  just load them from the cache when we navigate
       for (let i = 0; i < questions.length; i++) {
@@ -183,16 +184,29 @@ export const InterviewForm = ({
           disabled={disabled}
           required
         />
-         <div className="flex items-center space-x-2">
-      <Checkbox onCheckedChange={(checked)=> {setFormData({...formData,isLive:checked as boolean})}} checked={formData.isLive} id="live" />
-      <label
-        htmlFor="live"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        Is this a live interview?
-      </label>
-    </div>
-    {!formData.isLive &&  <>
+        <p>Interview Type </p>
+          <Select
+          disabled={disabled}
+          value={formData.type}
+          onValueChange={(value:interviewType) => {
+            setFormData({ ...formData, type:value });
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder=" Select interview type " />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              
+              <SelectItem value={interviewType.NonLive}>Non live</SelectItem>
+              <SelectItem value={interviewType.LiveCoding}>Live coding</SelectItem>
+              <SelectItem value={interviewType.CodeReview}>Code review</SelectItem>
+              <SelectItem value={interviewType.Live}>Live</SelectItem>
+           
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+    {formData.type === interviewType.NonLive &&  <>
         <p>Max seconds per answer</p>
         <Input
           placeholder="0"

@@ -6,6 +6,7 @@ import { InterviewForm } from "./InterviewForm";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/app/utils/axiosInstance";
+import { interviewType } from "@/app/types/InterviewType";
 interface ViewInterviewClientProps {
   interview: interview;
 }
@@ -37,7 +38,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
     const name = interview.name;
     const jobDescription = interview.jobDescription;
     const additionalDescription = interview.additionalDescription;
-    const isLive =  interview.isLive;
+    const type = interview.type;
 
     let numberOfTechnical = 0;
     let numberOfBehavioral = 0;
@@ -57,7 +58,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
       numberOfBehavioral: numberOfBehavioral,
       secondsPerAnswer: interview.secondsPerAnswer,
       additionalDescription,
-      isLive,
+      type,
       resumeUrl: "",
     };
   };
@@ -88,7 +89,7 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
   }
   return (
     <div className="flex flex-col h-full items-center justify-center">
-      {!interview.isLive ? 
+      {interview.type === interviewType.NonLive ? 
       (<Button
         onClick={() => {
           goToQuestions();

@@ -1,4 +1,5 @@
 
+import { interviewType } from "@/app/types/interviewType";
 import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
 import { InterviewForm } from "@/components/InterviewForm"
 // get the latest resume of the user to display if they have any
@@ -26,7 +27,7 @@ export default async function generateInterviewForms() {
       secondsPerAnswer:120,
       additionalDescription:"",
       resumeUrl: "",
-      isLive:false
+      type: interviewType.NonLive
     }
 
     

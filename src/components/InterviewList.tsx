@@ -322,6 +322,8 @@ export default function InterviewList() {
     updateDebouncedValue(newValue);
   };
 
+
+
   return (
     <div className="flex items-center justify-center h-full flex-col mt-4 mb-12 ">
       <h1 className="text-4xl font-bold mb-3 mt-5">Interviews</h1>
@@ -351,6 +353,7 @@ export default function InterviewList() {
               value={searchText}
             ></Input>
           </div>
+          {interviews?.length !== 0 ?
           <div className="h-full mb-4">
             <div className="h-full overflow-auto">
               <VirtualScroller
@@ -363,10 +366,17 @@ export default function InterviewList() {
               </VirtualScroller>
             </div>
           </div>
-        </div>
+               : <div className="text-center mt-5"> No Interviews </div>
+          }
+               
+        </div> 
+   
+
+          
       ) : (
         <Spinner></Spinner>
-      )}
+      )
+    }
     </div>
   );
 }

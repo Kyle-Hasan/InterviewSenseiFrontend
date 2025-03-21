@@ -1,4 +1,5 @@
 
+import { interviewType } from "./InterviewType"
 import { question } from "./question"
 export interface interview {
     id:number,
@@ -9,7 +10,7 @@ export interface interview {
     createdDate:string
     secondsPerAnswer:number,
     additionalDescription:string,
-    isLive:boolean
+    type:interviewType
     
 }
 
