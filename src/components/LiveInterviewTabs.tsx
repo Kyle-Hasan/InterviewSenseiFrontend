@@ -12,7 +12,7 @@ interface LiveInterviewTabsProps {
   transcripts?: message[];
   loadingTranscript?: boolean;
   loadingMessage: boolean;
-  loadingInitial: boolean;
+  loadingInitial?: boolean;
   feedback: interviewFeedback | null;
   activeTab: string,
   setActiveTab(tab:string):void,

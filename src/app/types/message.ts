@@ -3,5 +3,6 @@
 export interface message {
     content:string,
     fromAI:boolean,
-    interviewId:number
+    interviewId:number,
+    id:number
 }

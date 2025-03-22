@@ -6,7 +6,7 @@ import { InterviewForm } from "./InterviewForm";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/app/utils/axiosInstance";
-import { interviewType } from "@/app/types/InterviewType";
+import { interviewType } from "@/app/types/interviewType";
 interface ViewInterviewClientProps {
   interview: interview;
 }

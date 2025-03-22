@@ -13,6 +13,7 @@ import LiveInterviewTabs from "./LiveInterviewTabs";
 import { interviewFeedback } from "@/app/types/interviewFeedback";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
+import { Clock } from "lucide-react";
 
 interface LiveInterviewRecordProps {
   interviewId: number;
@@ -42,6 +43,28 @@ export default function LiveInterviewRecord({
   const [playTextToSpeech, setPlayTextToSpeech] = useState(true);
   const [activeTab,setActiveTab] = useState('transcript')
   const [loadingFeedback,setLoadingFeedback] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+
+  // Timer functionality
+    useEffect(() => {
+      let interval: NodeJS.Timeout;
+      
+      if (interviewStarted) {
+        interval = setInterval(() => {
+          setElapsedTime(prev => prev + 1);
+        }, 1000);
+      }
+      
+      return () => clearInterval(interval);
+    }, [interviewStarted]);
+  
+    const formatTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+  
 
   const fetchData = async () => {
     const { data } = await axiosInstance.get<{
@@ -101,12 +124,14 @@ export default function LiveInterviewRecord({
         content: messageResponse.userMessage,
         fromAI: false,
         interviewId,
+        id:messageResponse.userMessageId
       };
 
       const aiMessage: message = {
         content: messageResponse.aiResponse,
         fromAI: true,
         interviewId,
+        id:messageResponse.aiMessageId
       };
 
       setTranscripts([...transcripts, userMessage, aiMessage]);
@@ -201,37 +226,38 @@ export default function LiveInterviewRecord({
       <div className="flex justify-center items-start space-x-10 w-full h-2/3 xl:h-[80%] lg:h-[78%]">
         {/* Live Video Record Section */}
         <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/5 w-1/3 h-full mx-5">
-        <div className="flex gap-5">
-        <div className="flex items-center space-x-2">
-          <span>Text Mode</span>
-          <Switch checked={voiceMode} onCheckedChange={(checked)=> {
-            setActiveTab('transcript');
-            setVoiceMode(checked);
-            }} id="voice-mode " className="mx-1" />
-          <span>Voice Mode</span>
-          </div>
-
-          <div className="flex items-center space-x-1">
         
-          <Switch id="voice-mode " className="" checked={playTextToSpeech} onCheckedChange={(checked)=> {setPlayTextToSpeech(checked)}} />
-          <span>Play text to speech</span>
-          </div>
-          </div>
+          <div className="w-full flex items-center justify-between p-2 border-b bg-gray-50">
+       
+            
+            {/* Interview Controls */}
+            <div className="flex items-center gap-3">
+              {/* Timer */}
+              <div className="flex items-center gap-1">
+                <Clock size={16} className="text-gray-500" />
+                <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
+              </div>
+              
+              {/* Voice/Text Toggle */}
+              <div className="flex items-center space-x-2 mx-2">
+                <span className="text-xs">Text</span>
+                <Switch
+                  checked={voiceMode}
+                  onCheckedChange={(checked) => {
+                    setActiveTab("transcript");
+                    setVoiceMode(checked);
+                  }}
+                  id="voice-mode"
+                />
+               
+                <span className="text-xs">Voice</span>
 
-       {/* do this instead of conditional render to clean up video stuff in this component properly when switching modes  */}
-        <LiveInterviewVideoRecord
-          setUnsavedVideo={setUnsavedVideo}
-          sendMessage={sendMessage}
-          endInterview={endInterview}
-          videoLink={videoLink}
-          interviewEnded={interviewEnded}
-          interviewedStarted={interviewStarted}
-          voiceMode={voiceMode}
-        ></LiveInterviewVideoRecord>
-        
-
-        <div className="flex space-x-4 mt-4">
-          {!interviewStarted ? (
+                <Switch id="voice-mode " className="" checked={playTextToSpeech} onCheckedChange={(checked)=> {setPlayTextToSpeech(checked)}} />
+                <span className="text-xs">Play text to speech</span>
+              </div>
+              
+              {/* Start/End Interview Button */}
+              {!interviewStarted ? (
             <Button
               onClick={() => {
                 startInterview();
@@ -252,7 +278,22 @@ export default function LiveInterviewRecord({
               End Interview
             </Button>
           )}
+            </div>
           </div>
+
+       {/* do this instead of conditional render to clean up video stuff in this component properly when switching modes  */}
+        <LiveInterviewVideoRecord
+          setUnsavedVideo={setUnsavedVideo}
+          sendMessage={sendMessage}
+          endInterview={endInterview}
+          videoLink={videoLink}
+          interviewEnded={interviewEnded}
+          interviewedStarted={interviewStarted}
+          voiceMode={voiceMode}
+        ></LiveInterviewVideoRecord>
+        
+
+       
         </div>
 
         {/* Transcript Section */}

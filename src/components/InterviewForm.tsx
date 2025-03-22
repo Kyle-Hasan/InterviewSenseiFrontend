@@ -126,7 +126,7 @@ export const InterviewForm = ({
       setLoading(false);
 
       
-
+      debugger;
       // an interview that is live has no questions to add
       if(interview.type === interviewType.NonLive) {
       
@@ -141,11 +141,17 @@ export const InterviewForm = ({
       );
     }
 
-    else {  
+    else if(interview.type === interviewType.Live) {  
       router.replace(
         `/liveInterview/${interview.id}`
       );
 
+    }
+    else if(interview.type === interviewType.CodeReview || interview.type === interviewType.LiveCoding) {
+      router.replace(
+        `/codingInterview/${interview.id}`
+
+      )
     }
 
 

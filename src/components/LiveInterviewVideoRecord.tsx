@@ -7,11 +7,12 @@ interface LiveInterviewVideoRecordProps {
   sendMessage: (blob: Blob | null) => void;
   endInterview: (blob: Blob) => void;
 
-  videoLink: string;
-  setUnsavedVideo: (unsavedVideo: boolean) => void;
+  videoLink?: string;
+  setUnsavedVideo?: (unsavedVideo: boolean) => void;
   interviewedStarted: boolean;
   interviewEnded: boolean;
   voiceMode:boolean;
+  onlyAudio?:boolean;
 }
 export default function LiveInterviewVideoRecord({
   sendMessage,
@@ -20,7 +21,8 @@ export default function LiveInterviewVideoRecord({
   setUnsavedVideo,
   interviewedStarted,
   interviewEnded,
-  voiceMode
+  voiceMode,
+  onlyAudio
 }: LiveInterviewVideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -57,9 +59,7 @@ export default function LiveInterviewVideoRecord({
     },
   });
 
-  const [seconds, setSeconds] = useState("00");
-  const [minutes, setMinutes] = useState("00");
-  const [numSeconds, setNumSeconds] = useState(0);
+
   
 
   // State variables
@@ -78,7 +78,7 @@ export default function LiveInterviewVideoRecord({
   const SILENCE_THRESHOLD_MULTIPLIER = 2.8;
   const SILENCE_DURATION_TARGET = 800; // 800 ms
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
-  const intervalId = useRef<NodeJS.Timeout | null>(null);
+ 
 
   // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
 
@@ -119,14 +119,7 @@ export default function LiveInterviewVideoRecord({
     }
   }, [interviewEnded]);
 
-  // clean up interval
-  useEffect(() => {
-    return () => {
-      if (intervalId.current) {
-        clearInterval(intervalId.current);
-      }
-    };
-  }, []);
+  
 
   useEffect(() => {
     setHasVideo(false);
@@ -199,14 +192,15 @@ export default function LiveInterviewVideoRecord({
   };
 
   const startRecording = async () => {
+    if(setUnsavedVideo) {
     setUnsavedVideo(true);
+    }
     try {
       setRecording(true);
       setHasVideo(true);
-      setMinutes("00");
-      setSeconds("00");
+      
 
-      let mediaConstraints = { video: true, audio: true };
+      let mediaConstraints = { video: !onlyAudio, audio: true };
       let stream = null;
       //first try with audio and video, if that fails, fall back to only audio, if that doesnt work just give up
       try {
@@ -228,19 +222,7 @@ export default function LiveInterviewVideoRecord({
       mediaStream.current = stream;
       vad.start();
 
-      // set timer
-      intervalId.current = setInterval(() => {
-        setNumSeconds((prevNumSeconds) => {
-          const newNumSeconds = prevNumSeconds + 1;
-          setSeconds((newNumSeconds % 60).toString().padStart(2, "0"));
-          setMinutes(
-            Math.floor(newNumSeconds / 60)
-              .toString()
-              .padStart(2, "0")
-          );
-          return newNumSeconds;
-        });
-      }, 1000);
+     
 
       if (videoRef.current && mediaStream.current) {
         if (mediaConstraints.video) {
@@ -283,9 +265,7 @@ export default function LiveInterviewVideoRecord({
 
     console.log(mediaRecorder.current?.state);
 
-    if (intervalId.current) {
-      clearInterval(intervalId.current);
-    }
+  
     if (timeoutId.current) {
       clearTimeout(timeoutId.current);
     }
@@ -405,28 +385,16 @@ export default function LiveInterviewVideoRecord({
 
   return (
     <div className="">
-      <h2 className="text-xl font-bold mb-4">Live Interview</h2>
-      <div className="">
-        {hasVideo || videoLink ? (
-          <video className="" ref={videoRef} controls muted></video>
-        ) : (
-          <p className="text">Press start recording to show video</p>
-        )}
-      </div>
+   
       {recording && (
         <div className="mt-3 flex gap-10">
-          <div>
-            <p>Interview Time</p>
-            <div>
-              <span>{minutes}</span>:<span>{seconds}</span>
-            </div>
-          </div>
+          
 
-          <div className="flex items-center justify-center relative mt-1 mb-1 ml-5">
+          <div className="flex justify-center items-center relative mt-5 mb-1 ml-5">
             {/* expanding/contracting circle */}
             <div
               ref={circleRef}
-              className="absolute w-16 h-16 border-2 border-green-500 rounded-full transition-transform duration-100"
+              className="absolute w-16 h-16 border-2 border-green-500 rounded-full transition-transform duration-10 "
             ></div>
             {/* microphone icon from https://heroicons.com/ */}
             <div className="relative z-10">

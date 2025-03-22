@@ -1,5 +1,5 @@
 
-import { interviewType } from "./InterviewType"
+import { interviewType } from "./interviewType"
 import { question } from "./question"
 export interface interview {
     id:number,
