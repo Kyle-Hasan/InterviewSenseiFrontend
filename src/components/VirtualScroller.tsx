@@ -2,7 +2,6 @@
 import React, { ReactNode, useRef } from "react";
 import Spinner from "./Spinner";
 interface VirtualScrollerProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   totalItems: number;
 
   refreshFunction: Function;

@@ -66,8 +66,7 @@ export const InterviewForm = ({
   const queryClient = useQueryClient();
   const { setInterview } = useInterviewStore();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors("");
 

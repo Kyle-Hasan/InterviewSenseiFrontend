@@ -11,8 +11,8 @@ interface LiveInterviewVideoRecordProps {
   setUnsavedVideo?: (unsavedVideo: boolean) => void;
   interviewedStarted: boolean;
   interviewEnded: boolean;
-  voiceMode:boolean;
-  onlyAudio?:boolean;
+  voiceMode: boolean;
+  onlyAudio?: boolean;
 }
 export default function LiveInterviewVideoRecord({
   sendMessage,
@@ -22,7 +22,7 @@ export default function LiveInterviewVideoRecord({
   interviewedStarted,
   interviewEnded,
   voiceMode,
-  onlyAudio
+  onlyAudio,
 }: LiveInterviewVideoRecordProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -59,9 +59,6 @@ export default function LiveInterviewVideoRecord({
     },
   });
 
-
-  
-
   // State variables
   const [recording, setRecording] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -78,7 +75,6 @@ export default function LiveInterviewVideoRecord({
   const SILENCE_THRESHOLD_MULTIPLIER = 2.8;
   const SILENCE_DURATION_TARGET = 800; // 800 ms
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
- 
 
   // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
 
@@ -96,30 +92,27 @@ export default function LiveInterviewVideoRecord({
   };
 
   useEffect(() => {
-    debugger
+    debugger;
     if (interviewedStarted && !recording) {
       startRecording();
     }
   }, [interviewedStarted]);
 
   // clean up video stuff when you have voice recordings so that nothing bad happens if you turn voice mode on again
-  useEffect(()=> {
-    if(!voiceMode) {
+  useEffect(() => {
+    if (!voiceMode) {
       stopRecording();
-    }
-    else if(voiceMode && interviewedStarted && !recording) {
+    } else if (voiceMode && interviewedStarted && !recording) {
       startRecording();
     }
-
-  },[voiceMode])
+  }, [voiceMode]);
 
   useEffect(() => {
+    debugger;
     if (interviewEnded) {
       stopRecording();
     }
   }, [interviewEnded]);
-
-  
 
   useEffect(() => {
     setHasVideo(false);
@@ -153,8 +146,7 @@ export default function LiveInterviewVideoRecord({
 
     // uses events from mediaRecorder.current to function
     if (mediaRecorder.current) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: any[] = [];
+      const data: Blob[] = [];
       mediaRecorder.current.start();
 
       mediaRecorder.current.ondataavailable = (event) => data.push(event.data);
@@ -164,8 +156,7 @@ export default function LiveInterviewVideoRecord({
       const stopped = new Promise((resolve, reject) => {
         if (mediaRecorder.current) {
           mediaRecorder.current.onstop = resolve;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          mediaRecorder.current.onerror = (event: any) => reject(event.name);
+          mediaRecorder.current.onerror = (event: ErrorEvent) => reject(event);
         }
       });
 
@@ -186,19 +177,17 @@ export default function LiveInterviewVideoRecord({
     return null;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const convertDataToBlob = (data: any[], audio = true) => {
+  const convertDataToBlob = (data: Blob[] | ArrayBuffer[], audio = true) => {
     return new Blob(data, { type: audio ? "audio/wav" : "video/webm" });
   };
 
   const startRecording = async () => {
-    if(setUnsavedVideo) {
-    setUnsavedVideo(true);
+    if (setUnsavedVideo) {
+      setUnsavedVideo(true);
     }
     try {
       setRecording(true);
-      setHasVideo(true);
-      
+      setHasVideo(!onlyAudio);
 
       let mediaConstraints = { video: !onlyAudio, audio: true };
       let stream = null;
@@ -222,8 +211,6 @@ export default function LiveInterviewVideoRecord({
       mediaStream.current = stream;
       vad.start();
 
-     
-
       if (videoRef.current && mediaStream.current) {
         if (mediaConstraints.video) {
           videoRef.current.srcObject = mediaStream.current;
@@ -240,10 +227,9 @@ export default function LiveInterviewVideoRecord({
       // records until its stopped, afterwards process video propertly
 
       const recordedChunks = await handleStream(mediaStream.current);
-
+      const recordedBlob = convertDataToBlob(recordedChunks ?? [], !hasVideo);
       // make file for video
       if (videoRef.current && recordedChunks) {
-        const recordedBlob = convertDataToBlob(recordedChunks ?? [], false);
         endInterview(recordedBlob);
 
         const url = URL.createObjectURL(recordedBlob);
@@ -252,6 +238,7 @@ export default function LiveInterviewVideoRecord({
         videoRef.current.srcObject = null;
         videoRef.current.controls = true;
       }
+      endInterview(recordedBlob);
     } catch (error) {
       console.error("Error during recording:", error);
       setRecording(false);
@@ -259,13 +246,12 @@ export default function LiveInterviewVideoRecord({
   };
 
   const stopRecording = () => {
-    mediaStream.current?.getTracks().forEach((track)=> track.stop());
+    mediaStream.current?.getTracks().forEach((track) => track.stop());
     mediaRecorder.current?.stop();
     vad.pause();
 
     console.log(mediaRecorder.current?.state);
 
-  
     if (timeoutId.current) {
       clearTimeout(timeoutId.current);
     }
@@ -379,17 +365,22 @@ export default function LiveInterviewVideoRecord({
   };
   // Mock function to handle starting a live interview session
   // do this instead of not rendering at all in the parent to clean up video stuff properly when leaving voice mode
-  if(!voiceMode) {
-    return <></>
+  if (!voiceMode) {
+    return <></>;
   }
 
   return (
     <div className="">
-   
+      <div className="">
+        {onlyAudio &&
+          (hasVideo || videoLink ? (
+            <video className="" ref={videoRef} controls muted></video>
+          ) : (
+            <p className="text">Press start recording to show video</p>
+          ))}
+      </div>
       {recording && (
-        <div className="mt-3 flex gap-10">
-          
-
+        <div className="mt-3 justify-center flex gap-10">
           <div className="flex justify-center items-center relative mt-5 mb-1 ml-5">
             {/* expanding/contracting circle */}
             <div

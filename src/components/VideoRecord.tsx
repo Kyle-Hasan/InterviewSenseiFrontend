@@ -104,8 +104,7 @@ export default function VideoRecord({
     mediaRecorder.current = new MediaRecorder(stream as MediaStream);
     // uses events from mediaRecorder.current to function
     if (mediaRecorder.current) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: any[] = [];
+      const data: Blob[] = [];
 
       mediaRecorder.current.ondataavailable = (event) => data.push(event.data);
 
@@ -114,8 +113,7 @@ export default function VideoRecord({
       const stopped = new Promise((resolve, reject) => {
         if (mediaRecorder.current) {
           mediaRecorder.current.onstop = resolve;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          mediaRecorder.current.onerror = (event: any) => reject(event.name);
+          mediaRecorder.current.onerror = (event: ErrorEvent) => reject(event);
         }
       });
 
@@ -151,8 +149,7 @@ export default function VideoRecord({
     return null;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const convertDataToBlob = (data: any[]) => {
+  const convertDataToBlob = (data: Blob[]) => {
     return new Blob(data, { type: "video/webm" });
   };
 

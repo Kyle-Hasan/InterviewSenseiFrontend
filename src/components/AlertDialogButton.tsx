@@ -11,10 +11,8 @@ import {
   } from "@/components/ui/alert-dialog"
 
   interface DeleteConfirmationProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onConfirm: (e:any)=> void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    buttonContent:any;
+    onConfirm: (e:unknown)=> void;
+    buttonContent:JSX.Element;
     dialogContent:string
   }
   

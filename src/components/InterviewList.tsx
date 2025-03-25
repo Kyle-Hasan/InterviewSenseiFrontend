@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { interview } from "@/app/types/interview";
 import { useRouter } from "next/navigation";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { ChangeEventHandler, useCallback, useContext, useEffect, useState } from "react";
 import { Delete02Icon, PencilEdit02Icon } from "hugeicons-react";
 import Spinner from "./Spinner";
 import axiosInstance from "@/app/utils/axiosInstance";
@@ -243,7 +242,7 @@ export default function InterviewList() {
     setEditing(false);
   };
 
-  const editValueChange = (e: any) => {
+  const editValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedValue(e.target.value);
   };
 
@@ -316,7 +315,7 @@ export default function InterviewList() {
       </li>
     );
   };
-  const textSearchChange = (e: any) => {
+  const textSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setSearchText(newValue);
     updateDebouncedValue(newValue);

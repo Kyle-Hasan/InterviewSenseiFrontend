@@ -6,8 +6,7 @@ interface PopupDialogProps {
   open:boolean,
   title:string,
   description:string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onConfirm: (e:any)=> void | any;
+  onConfirm: (e:unknown)=> void | unknown;
   setOpen: (e:boolean)=>void
 }
 export function PopupDialog({open,title,description,onConfirm,setOpen}:PopupDialogProps) {

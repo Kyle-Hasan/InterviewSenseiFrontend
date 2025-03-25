@@ -1,36 +1,86 @@
-import React, { useState } from 'react'
-import Editor from '@monaco-editor/react';
-import { Select } from '@radix-ui/react-select';
-import { SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Button } from './ui/button';
-import CodeResult from './CodeResult';
+import React, { useState } from "react";
+import Editor from "@monaco-editor/react";
+import { Select } from "@radix-ui/react-select";
+import {
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Button } from "./ui/button";
+import CodeResult from "./CodeResult";
+import axios from "axios";
+import axiosInstance from "@/app/utils/axiosInstance";
 
-
-interface CodeEditorProps { 
-    codeDefault:string;
-    languageDefault:string;
+interface CodeEditorProps {
+  codeDefault: string;
+  languageDefault: string;
+  interviewId: number;
 }
-export default function CodeEditor({codeDefault,languageDefault}:CodeEditorProps) {
+interface CodeSubmissionResult {
+  codeSubmissionId:number;
+}
 
-  const [code,setCode] = useState(codeDefault);
+interface CodeRunResult {
+  stdout: string | null;
+  time: string;
+  memory: number;
+  stderr: string | null;
+  compile_output: string | null;
+  message: string | null;
+  status: {
+    id: number;
+    description: string;
+  };
+}
 
-  const languages = ['python','javascript','java'];
-  const [selectedLanguage,setSelectedLanguage] = useState(languageDefault);
+export default function CodeEditor({
+  codeDefault,
+  languageDefault,
+  interviewId
+}: CodeEditorProps) {
+  const [code, setCode] = useState(codeDefault);
 
-  const handleEditorChange = (value:string | undefined,event:any)=> {
+  const languages = ["python", "javascript", "java"];
+  const [selectedLanguage, setSelectedLanguage] = useState(languageDefault);
+  const [codeRunResult, setCodeRunResult] = useState<CodeRunResult | null>(null);
+
+  const handleEditorChange = (value: string | undefined, event: unknown) => {
     setCode(value ?? "");
-  }
+  };
 
-  const runCode = ()=> {
+  const runCode = async() => {
+    const body = {
+        sourceCode:code,
+        interviewId,
+        stdin:"",
+        languageName:selectedLanguage
+    }
+
+    const submissionResult = await axiosInstance.post<CodeSubmissionResult>("/CodeRunner/submitCode",body);
+    // poll for result
+    const interval = setInterval(async() => {
+
+      const runResult = await axiosInstance.get<CodeRunResult>(`/CodeRunner/checkSubmission?codeSubmissionId=${submissionResult.data.codeSubmissionId}`);
+      if(runResult) {
+        setCodeRunResult(runResult.data);
+        clearInterval(interval)
+      }
+      
+    }, 1000);
+    
+    setTimeout(() => {
+      clearInterval(interval);
+    }, 5000); // stop after 5 seconds
 
   };
   return (
-    <div className='h-full w-full'>
-        <div className='mb-5 flex gap-10 '>
-      <Select
-         
+    <div className="h-full w-full">
+      <div className="mb-5 flex gap-10 ">
+        <Select
           value={selectedLanguage}
-          onValueChange={(value:string) => {
+          onValueChange={(value: string) => {
             setSelectedLanguage(value);
           }}
         >
@@ -39,33 +89,32 @@ export default function CodeEditor({codeDefault,languageDefault}:CodeEditorProps
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              
-              {
-                languages.map((x)=> <SelectItem key={x} value={x}>{x}</SelectItem>)
-              }
-           
+              {languages.map((x) => (
+                <SelectItem key={x} value={x}>
+                  {x}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button onClick={(e)=> {runCode()} }>Run Code</Button>
+        <Button
+          onClick={(e) => {
+            runCode();
+          }}
+        >
+          Run Code
+        </Button>
+      </div>
 
-        
-        </div>
-        
-  <Editor
-    height="53vh"
-    language={selectedLanguage}
-    theme="vs-dark"
-    
-    onChange={handleEditorChange}
-    value={code}
-  />
+      <Editor
+        height="45vh"
+        language={selectedLanguage}
+        theme="vs-dark"
+        onChange={handleEditorChange}
+        value={code}
+      />
 
-  <CodeResult output='' error=''>
-
-  </CodeResult>
-
-  </div>
-  )
-  
+      <CodeResult codeRunResult={codeRunResult}></CodeResult>
+    </div>
+  );
 }

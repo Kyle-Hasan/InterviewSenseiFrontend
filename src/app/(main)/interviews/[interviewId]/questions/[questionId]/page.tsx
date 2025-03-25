@@ -48,13 +48,7 @@ export default function DisplayQuestion() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [dialogConfirm, setDialogConfirm] = useState<(e: any) => void>(
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (e: any) => {
-      console.log(e);
-    }
-  );
+  const [dialogConfirm, setDialogConfirm] = useState<() => void>(() => {});
   const changeQuestion = (offset: number) => {
     const navigateAway = () => {
       if (offset == 1) {

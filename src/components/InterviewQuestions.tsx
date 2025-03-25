@@ -22,10 +22,8 @@ export const InterviewQuestions = ({
   
 
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [dialogConfirm, setDialogConfirm] = useState<(e: any) => any>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (e: any) => {
+  const [dialogConfirm, setDialogConfirm] = useState<(e: unknown) => unknown>(
+    (e: unknown) => {
       console.log(e);
     }
   );

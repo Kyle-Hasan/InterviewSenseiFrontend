@@ -41,7 +41,7 @@ export default function LiveInterviewTabs({
 
 
     return (
-      <div className="flex flex-col items-center border-2 border-black p-5 xl:w-2/3 w-1/3 h-full overflow-auto mx-5">
+      <div className="flex flex-col items-center border-2 border-black p-5 h-full overflow-auto mx-5">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)}>
           <div className="sticky top-0 left-0 right-0 bg-white z-10 shadow-md">
             <TabsList className="w-full">
