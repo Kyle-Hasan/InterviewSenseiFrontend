@@ -2,7 +2,7 @@
 
 import { interview } from "@/app/types/interview";
 import { useRouter } from "next/navigation";
-import { ChangeEventHandler, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Delete02Icon, PencilEdit02Icon } from "hugeicons-react";
 import Spinner from "./Spinner";
 import axiosInstance from "@/app/utils/axiosInstance";

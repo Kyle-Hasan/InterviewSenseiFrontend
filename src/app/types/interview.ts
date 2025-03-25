@@ -10,7 +10,8 @@ export interface interview {
     createdDate:string
     secondsPerAnswer:number,
     additionalDescription:string,
-    type:interviewType
-    
+    type:interviewType,
+    userCode?:string,
+    codeLanguageName?:string
 }
 

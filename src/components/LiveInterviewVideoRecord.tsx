@@ -372,7 +372,7 @@ export default function LiveInterviewVideoRecord({
   return (
     <div className="">
       <div className="">
-        {onlyAudio &&
+        {!onlyAudio &&
           (hasVideo || videoLink ? (
             <video className="" ref={videoRef} controls muted></video>
           ) : (

@@ -83,9 +83,16 @@ const ViewInterviewClient = ({ interview }: ViewInterviewClientProps) => {
   };
 
   const goToLive = ()=> {
+    if(interview.type == interviewType.Live) {
     router.replace(
       `/liveInterview/${interview.id}`
-    )
+    );
+  }
+  else if(interview.type == interviewType.CodeReview || interview.type == interviewType.LiveCoding) {
+    router.replace(
+      `/codingInterview/${interview.id}`
+    );
+  } 
   }
   return (
     <div className="flex flex-col h-full items-center justify-center">

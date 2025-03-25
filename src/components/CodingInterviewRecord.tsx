@@ -29,6 +29,10 @@ export default function CodingInterviewRecord({
   const [transcripts, setTranscripts] = useState<message[]>([]);
   const [playTextToSpeech, setPlayTextToSpeech] = useState(true);
   const [interviewEnded, setInterviewEnded] = useState(false);
+  const [userCode,setUserCode] = useState("//write code here");
+  const [codeLanguageName,setCodeLanguageName] = useState("javascript");
+  const [questionBody,setQuestionBody] = useState("");
+
 
   // Timer functionality
   useEffect(() => {
@@ -40,6 +44,44 @@ export default function CodingInterviewRecord({
     }
     return () => clearInterval(interval);
   }, [interviewStarted]);
+
+  useEffect(()=> {
+
+    const getData = async()=>{
+
+      try{
+      setLoadingFeedback(true);
+    const body = {
+      id:interviewId,
+      fields: ['messages','feedback','codelanguagename','usercode']
+    }
+
+    const response = await axiosInstance.post<{
+          feedback: interviewFeedback;
+          messages: message[];
+          userCode:string;
+          codeLanguageName:string;
+          questionBody:string
+        }>("/Interview/getCodingInterviewInfo",body)
+
+        setFeedback(response.data.feedback);
+        setTranscripts(response.data.messages);
+        setUserCode(response.data.userCode);
+        setCodeLanguageName(response.data.codeLanguageName);
+        
+
+      }
+      catch(error) {
+        console.error(error);
+      }
+      finally {
+        setLoadingTranscript(false);
+
+      }
+      }
+      getData();
+
+  }, [])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -170,6 +212,12 @@ export default function CodingInterviewRecord({
               )}
             </div>
           </div>
+          <div>
+            <h2 className="font-bold mb-1">Question </h2>
+            <div>
+            {questionBody}
+            </div>
+          </div>
         </div>
 
         {/* Column 2: Code Editor */}
@@ -177,8 +225,8 @@ export default function CodingInterviewRecord({
           <h2 className="font-medium text-gray-700 mb-4">Code Editor</h2>
           <CodeEditor
             interviewId={interviewId}
-            codeDefault="// Write code here"
-            languageDefault="javascript"
+            codeDefault={userCode}
+            languageDefault={codeLanguageName}
           />
         </div>
 
