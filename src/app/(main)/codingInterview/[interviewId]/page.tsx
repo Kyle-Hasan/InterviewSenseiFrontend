@@ -7,7 +7,8 @@ import React from 'react'
 export default function CodingInterview() {
   const params = useParams<{ interviewId: string }>();
   const interviewId = params?.interviewId;
-  console.log("interview id ", interviewId)
+  console.log("interview id ", interviewId);
+  
   
   return (
     <>

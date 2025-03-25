@@ -3,7 +3,7 @@ import * as signalR from "@microsoft/signalr";
 import { useQueryClient } from "@tanstack/react-query";
 
 
-interface SignalRContextType {
+export interface SignalRContextType {
     createConnection: (hubUrl: string, connectionKey: string) => Promise<signalR.HubConnection | null>;
     disconnectConnection: (connectionKey: string) => Promise<void>;
     disconnectAllConnections: () => Promise<void>;
