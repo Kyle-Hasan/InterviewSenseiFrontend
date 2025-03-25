@@ -155,12 +155,12 @@ export const InterviewForm = ({
 
 
 
-
+    setErrors("")
     } catch (e) {
       setErrors("Errors : " + e);
     } finally {
       setLoading(false);
-      setErrors("");
+     
     }
   };
 
