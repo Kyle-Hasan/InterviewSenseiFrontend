@@ -8,22 +8,24 @@ import axiosInstance from '@/app/utils/axiosInstance'
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from './ui/navigation-menu'
 
 export const Navbar = () => {
-  const [username,setUsername] = useState<string>("")
+  const [username,setUsername] = useState<string>("");
 
   useEffect(()=> {
-    setUsername(sessionStorage.getItem("username") || "")
+    setUsername(sessionStorage.getItem("username") || "");
   },[])
  
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
+    setIsMenuOpen(!isMenuOpen);
   }
 
   const logout = async()=> {
-    await axiosInstance.get("/Auth/logout")
-    router.push("/login")
+    await axiosInstance.get("/Auth/logout");
+    
+    router.push("/login");
+    
 
   }
 

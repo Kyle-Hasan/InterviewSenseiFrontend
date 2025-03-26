@@ -1,43 +1,46 @@
+'use client';
 
+
+import axiosInstance from "@/app/utils/axiosInstance";
 import { interviewType } from "@/app/types/interviewType";
-import serverAxiosInstance from "@/app/utils/serverAxiosInstance";
-import { InterviewForm } from "@/components/InterviewForm"
-// get the latest resume of the user to display if they have any
-async function getUserLatestResume() {
-  const response = await serverAxiosInstance.get("/Interview/getLatestResume");
-  
-  return response.data;
-}
-// get all the users resumes
-async function getUserResumes() {
-  const response = await serverAxiosInstance.get("/Interview/getAllResumes");
-  
-  return response.data ? response.data : [];
+import { InterviewForm } from "@/components/InterviewForm";
+import { useQuery } from "@tanstack/react-query";
+
+function useUserResumes() {
+  return useQuery(
+    {
+    queryKey: ["userResumes"],
+    queryFn: async () => {
+    const response = await axiosInstance.get("/Interview/getAllResumes");
+    return response.data ? response.data : [];
+  }});
 }
 
+export default function GenerateInterviewForms() {
+  const { data: allResumes, isLoading, error } = useUserResumes();
 
-export default async function generateInterviewForms() {
-    
-    const initialData = {
-      resume:null,
-      numberOfBehavioral:0,
-      numberOfTechnical:0,
-      jobDescription:"",
-      name: "",
-      secondsPerAnswer:120,
-      additionalDescription:"",
-      resumeUrl: "",
-      type: interviewType.NonLive
-    }
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading resumes</div>;
 
-    
+  const initialData = {
+    resume: null,
+    numberOfBehavioral: 0,
+    numberOfTechnical: 0,
+    jobDescription: "",
+    name: "",
+    secondsPerAnswer: 120,
+    additionalDescription: "",
+    resumeUrl: "",
+    type: interviewType.NonLive,
+  };
 
-   
-    const allResumes = await getUserResumes();
-  
-
-    
-  
-  return ( <InterviewForm allResumes={allResumes} initialResumeUrl={""} initialResumeName={""}  initialData={initialData} disabled={false}></InterviewForm>
-  )
+  return (
+    <InterviewForm
+      allResumes={allResumes}
+      initialResumeUrl={""}
+      initialResumeName={""}
+      initialData={initialData}
+      disabled={false}
+    />
+  );
 }
