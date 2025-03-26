@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { Select } from "@radix-ui/react-select";
 import {
@@ -49,6 +49,10 @@ export default function CodeEditor({
   const handleEditorChange = (value: string | undefined, event: unknown) => {
     setCode(value ?? "");
   };
+
+  useEffect(()=> {
+    setCode(codeDefault.replace(/\\r\\n/g, '\n'))
+  }, [codeDefault])
 
   const runCode = async() => {
     const body = {

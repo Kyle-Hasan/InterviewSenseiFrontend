@@ -17,7 +17,12 @@ import { Clock } from "lucide-react";
 
 interface LiveInterviewRecordProps {
   interviewId: number;
+}
 
+interface InterviewFeedbackAndMessages {
+  feedback: interviewFeedback;
+  messages: message[];
+  videoLink?: string;
 }
 
 export default function LiveInterviewRecord({
@@ -66,22 +71,27 @@ export default function LiveInterviewRecord({
     };
   
 
-  const fetchData = async () => {
-    const { data } = await axiosInstance.get<{
-      feedback: interviewFeedback;
-      messages: message[];
-      videoLink?: string
-    }>(`/Interview/getFeedbackAndMessages?interviewId=${interviewId}`);
-    setTranscripts(data.messages);
-    setFeedback(data.feedback);
+    const fetchData = async () => {
+      const { data } = await axiosInstance.get<{
+        feedback: interviewFeedback;
+        messages: message[];
+        videoLink?: string;
+      }>(`/Interview/getFeedbackAndMessages?interviewId=${interviewId}`);
+      return data;
+    };
     
-    setVideoLink(data.videoLink ?? "") ;
-    return data;
-  };
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["interviewFeedbackandMessages", interviewId],
-    queryFn: fetchData,
-  });
+    const { data, isLoading, error } = useQuery<InterviewFeedbackAndMessages>({
+      queryKey: ["interviewFeedbackandMessages", interviewId],
+      queryFn: () => fetchData(),
+    });
+  
+    useEffect(() => {
+      if (data) {
+        setTranscripts(data.messages);
+        setFeedback(data.feedback);
+        setVideoLink(data.videoLink ?? "");
+      }
+    }, [data]);
 
   if (isLoading) return <Spinner></Spinner>;
   if (error) return <div>Error: {error.message}</div>;

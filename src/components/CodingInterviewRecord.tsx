@@ -9,9 +9,18 @@ import axiosInstance from "@/app/utils/axiosInstance";
 import { interviewFeedback } from "@/app/types/interviewFeedback";
 import { message } from "@/app/types/message";
 import { messageResponse } from "@/app/types/messageResponse";
+import { useQuery } from "@tanstack/react-query";
 
 interface CodingInterviewRecordProps {
   interviewId: number;
+}
+
+interface CodingInterviewInfo {
+  feedback: interviewFeedback;
+  messages: message[];
+  userCode: string;
+  codeLanguageName: string;
+  questionBody: string;
 }
 
 export default function CodingInterviewRecord({
@@ -29,10 +38,27 @@ export default function CodingInterviewRecord({
   const [transcripts, setTranscripts] = useState<message[]>([]);
   const [playTextToSpeech, setPlayTextToSpeech] = useState(true);
   const [interviewEnded, setInterviewEnded] = useState(false);
-  const [userCode,setUserCode] = useState("//write code here");
-  const [codeLanguageName,setCodeLanguageName] = useState("javascript");
-  const [questionBody,setQuestionBody] = useState("");
+  const [userCode, setUserCode] = useState("//write code here");
+  const [codeLanguageName, setCodeLanguageName] = useState("javascript");
+  const [questionBody, setQuestionBody] = useState("");
 
+  const fetchCodingInterviewInfo = async (): Promise<CodingInterviewInfo> => {
+    const body = {
+      id: interviewId,
+      fields: [
+        "messages",
+        "feedback",
+        "codelanguagename",
+        "usercode",
+        "questionBody",
+      ],
+    };
+    const { data } = await axiosInstance.post<CodingInterviewInfo>(
+      "/Interview/getCodingInterviewInfo",
+      body
+    );
+    return data;
+  };
 
   // Timer functionality
   useEffect(() => {
@@ -45,43 +71,22 @@ export default function CodingInterviewRecord({
     return () => clearInterval(interval);
   }, [interviewStarted]);
 
-  useEffect(()=> {
+  const { data, isLoading, error } = useQuery<CodingInterviewInfo>({
+    queryKey: ["codingInterviewInfo", interviewId],
+    queryFn: () => fetchCodingInterviewInfo(),
+  });
 
-    const getData = async()=>{
-
-      try{
-      setLoadingFeedback(true);
-    const body = {
-      id:interviewId,
-      fields: ['messages','feedback','codelanguagename','usercode']
+  useEffect(() => {
+    if (data) {
+      debugger;
+      setFeedback(data.feedback);
+      setTranscripts(data.messages);
+      setUserCode(data.userCode);
+      setCodeLanguageName(data.codeLanguageName);
+      setQuestionBody(data.questionBody);
+      setLoadingTranscript(false);
     }
-
-    const response = await axiosInstance.post<{
-          feedback: interviewFeedback;
-          messages: message[];
-          userCode:string;
-          codeLanguageName:string;
-          questionBody:string
-        }>("/Interview/getCodingInterviewInfo",body)
-
-        setFeedback(response.data.feedback);
-        setTranscripts(response.data.messages);
-        setUserCode(response.data.userCode);
-        setCodeLanguageName(response.data.codeLanguageName);
-        
-
-      }
-      catch(error) {
-        console.error(error);
-      }
-      finally {
-        setLoadingTranscript(false);
-
-      }
-      }
-      getData();
-
-  }, [])
+  }, [data]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -178,7 +183,8 @@ export default function CodingInterviewRecord({
               </span>
             </div>
             {/* Voice/Text Toggle */}
-            <div className="flex items-center space-x-2">
+            
+            <div className="flex items-center space-x-2 mx-2">
               <span className="text-xs">Text</span>
               <Switch
                 checked={voiceMode}
@@ -188,16 +194,23 @@ export default function CodingInterviewRecord({
                 }}
                 id="voice-mode"
               />
+
               <span className="text-xs">Voice</span>
+
+              <Switch
+                id="voice-mode "
+                className=""
+                checked={playTextToSpeech}
+                onCheckedChange={(checked) => {
+                  setPlayTextToSpeech(checked);
+                }}
+              />
+              <span className="text-xs">Play text to speech</span>
             </div>
             {/* Start/End Interview Button */}
             <div className="flex justify-center">
               {!interviewStarted ? (
-                <Button
-                  size="sm"
-                  onClick={startInterview}
-                  className="text-xs"
-                >
+                <Button size="sm" onClick={startInterview} className="text-xs">
                   Start Interview
                 </Button>
               ) : (
@@ -215,7 +228,12 @@ export default function CodingInterviewRecord({
           <div>
             <h2 className="font-bold mb-1">Question </h2>
             <div>
-            {questionBody}
+              {questionBody.split("\n").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  <br />
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -235,6 +253,7 @@ export default function CodingInterviewRecord({
           <h2 className="font-medium text-gray-700 mb-4">Transcript</h2>
           <LiveInterviewTabs
             loadingMessage={loadingMessage}
+            transcripts={transcripts}
             feedback={feedback}
             activeTab={activeTab}
             setActiveTab={setActiveTab}

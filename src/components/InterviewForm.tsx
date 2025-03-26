@@ -125,7 +125,7 @@ export const InterviewForm = ({
       setLoading(false);
 
       
-      debugger;
+      ;
       // an interview that is live has no questions to add
       if(interview.type === interviewType.NonLive) {
       
@@ -285,6 +285,7 @@ export const InterviewForm = ({
         <Textarea
           disabled={disabled}
           value={formData.additionalDescription}
+         className="whitespace-pre-wrap"
           onChange={(e) => {
             setFormData({ ...formData, additionalDescription: e.target.value });
           }}

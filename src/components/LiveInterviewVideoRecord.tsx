@@ -92,7 +92,7 @@ export default function LiveInterviewVideoRecord({
   };
 
   useEffect(() => {
-    debugger;
+    ;
     if (interviewedStarted && !recording) {
       startRecording();
     }
@@ -108,7 +108,7 @@ export default function LiveInterviewVideoRecord({
   }, [voiceMode]);
 
   useEffect(() => {
-    debugger;
+    ;
     if (interviewEnded) {
       stopRecording();
     }
