@@ -2,7 +2,30 @@ import { test, expect } from '@playwright/test';
 
 test.describe('InterviewList Component', () => {
  
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context}) => {
+
+    await context.addCookies([
+      {
+        name: 'refreshToken',
+        value:
+          'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwidG9rZW5UeXBlIjoicmVmcmVzaCIsImV4cCI6MTc0Mjk3MTkwN30.eVCboSlpI6APMwyP-4SwSsFd_pKskaIxrCSeOJiy8p-VGx7Q_rEFyI_Aub16FmkatxcYl7EJ3-7iWaF5HxuqEw',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax'
+      },
+      {
+        name: 'accessToken',
+        value:
+          'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwidG9rZW5UeXBlIjoiYWNjZXNzIiwiaXNzIjoiYXBwIiwiaWF0IjoxNjg3OTc0NTYwLCJleHAiOjE3NDI5NzE5MDB9.PS4KJf4eHdL60x8ZKCm6Jdy1bSx3xRk8d9cVQX0x1AbcQGvph3dG5P9QkxZpXxYdJvFJ4WVZ2rPqSg4f4gHjYQ',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax'
+      }
+    ]);
     
     await page.route('**/Interview/interviewList', async (route) => {
      
