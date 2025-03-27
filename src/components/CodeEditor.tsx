@@ -12,6 +12,7 @@ import { Button } from "./ui/button";
 import CodeResult from "./CodeResult";
 import axios from "axios";
 import axiosInstance from "@/app/utils/axiosInstance";
+import Spinner from "./Spinner";
 
 interface CodeEditorProps {
   codeDefault: string;
@@ -45,6 +46,7 @@ export default function CodeEditor({
   const languages = ["python", "javascript", "java"];
   const [selectedLanguage, setSelectedLanguage] = useState(languageDefault);
   const [codeRunResult, setCodeRunResult] = useState<CodeRunResult | null>(null);
+  const [codeRunLoading,setCodeRunLoading] = useState(false);
 
   const handleEditorChange = (value: string | undefined, event: unknown) => {
     setCode(value ?? "");
@@ -62,20 +64,25 @@ export default function CodeEditor({
         languageName:selectedLanguage
     }
 
+    setCodeRunLoading(true);
+
     const submissionResult = await axiosInstance.post<CodeSubmissionResult>("/CodeRunner/submitCode",body);
+    
     // poll for result
     const interval = setInterval(async() => {
 
       const runResult = await axiosInstance.get<CodeRunResult>(`/CodeRunner/checkSubmission?codeSubmissionId=${submissionResult.data.codeSubmissionId}`);
       if(runResult) {
+        setCodeRunLoading(false);
         setCodeRunResult(runResult.data);
-        clearInterval(interval)
+        clearInterval(interval);
       }
       
     }, 1000);
     
     setTimeout(() => {
       clearInterval(interval);
+      setCodeRunLoading(false);
     }, 5000); // stop after 5 seconds
 
   };
@@ -101,13 +108,14 @@ export default function CodeEditor({
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button
+
+        { !codeRunLoading ? (<Button
           onClick={(e) => {
             runCode();
           }}
         >
           Run Code
-        </Button>
+        </Button>) : (<Spinner></Spinner>) }
       </div>
 
       <Editor
