@@ -79,7 +79,8 @@ export default function LiveInterviewVideoRecord({
   // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
 
   const getVideoLink = async (videoLink: string): Promise<string> => {
-    if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true") {
+    debugger
+    if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true" && videoLink) {
       const response = await axiosInstance.get(videoLink);
       if (response?.data) {
         return response.data.result;
@@ -122,6 +123,7 @@ export default function LiveInterviewVideoRecord({
         videoRef.current.pause();
 
         if (videoLink && videoLink.length > 0) {
+          debugger
           // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
           videoRef.current.src = await getVideoLink(videoLink);
           videoRef.current.load();

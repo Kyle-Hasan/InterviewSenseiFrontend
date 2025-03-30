@@ -53,7 +53,7 @@ export default function InterviewRecord({
         setUnsavedVideo(false);
         setLoadingResponse(false);
         const data: response = response.data;
-        convertToGoodAndBad(data.positiveFeedback,data.negativeFeedback);
+        convertToGoodAndBad(data.positiveFeedback, data.negativeFeedback);
         setAnswer(data.answer);
 
         return data;
@@ -99,7 +99,10 @@ export default function InterviewRecord({
 
       if (responses && responses.length > 0) {
         setSelectedResponseIndex(responses?.length - 1);
-        convertToGoodAndBad(responses[responses?.length - 1].positiveFeedback,responses[responses?.length - 1].negativeFeedback);
+        convertToGoodAndBad(
+          responses[responses?.length - 1].positiveFeedback,
+          responses[responses?.length - 1].negativeFeedback
+        );
         setAnswer(responses[responses?.length - 1].answer);
       } else {
         setSelectedResponseIndex(0);
@@ -108,27 +111,31 @@ export default function InterviewRecord({
     }
   }, [question, isLoading, isError]);
 
-  const convertToGoodAndBad = (positiveFeedback:string,negativeFeedback:string) => {
-   
-    // split separate bullet points by splitting text at ..., remove good and needs improvement headers from display as well 
-      let goodArr = positiveFeedback.split("...");
-      if (goodArr.length > 0) {
-        goodArr[0] = goodArr[0].replace("Good: ", "");
-        goodArr = goodArr
-          .map((x) => x.replace("$", ""))
-          .filter((x) => x.length > 10);
-      }
+  const convertToGoodAndBad = (
+    positiveFeedback: string,
+    negativeFeedback: string
+  ) => {
+    let processedFeedback = positiveFeedback.replace(/\\n/g, "\n");
 
-      let badArr = negativeFeedback.split("...");
-      if (badArr.length > 0) {
-        badArr[0] = badArr[0].replace("Needs Improvement: ", "");
-        badArr = badArr
-          .map((x) => x.replace("$", ""))
-          .filter((x) => x.length > 1);
-      }
-      setReviewGood(goodArr);
-      setReviewBad(badArr);
-    
+    // split separate bullet points by splitting text at ..., remove good and needs improvement headers from display as well
+    let goodArr = processedFeedback?.split(/\n\n+/);
+    if (goodArr?.length > 0) {
+      goodArr = goodArr
+        .map((x) => x.replace("$", ""))
+
+        .filter((x) => x.length > 10);
+    }
+
+    processedFeedback = negativeFeedback.replace(/\\n/g, "\n");
+
+    let badArr = processedFeedback?.split(/\n+/);
+    if (badArr?.length > 0) {
+      badArr = badArr
+        .map((x) => x.replace("$", ""))
+        .filter((x) => x.length > 1);
+    }
+    setReviewGood(goodArr);
+    setReviewBad(badArr);
   };
 
   const handleSelectChange = (value: string) => {
@@ -137,12 +144,14 @@ export default function InterviewRecord({
     if (responses) {
       const showResponse = responses[index];
       if (responses && responses.length > 0) {
-        convertToGoodAndBad(showResponse.positiveFeedback,showResponse.negativeFeedback);
+        convertToGoodAndBad(
+          showResponse.positiveFeedback,
+          showResponse.negativeFeedback
+        );
         setAnswer(showResponse.answer);
       }
     }
   };
- 
 
   if (isLoading) {
     return <Spinner></Spinner>;
@@ -170,7 +179,7 @@ export default function InterviewRecord({
               responses &&
               responses.length >= 0 &&
               selectedResponseIndex < responses.length
-                ? responses[selectedResponseIndex].videoLink
+                ? responses[selectedResponseIndex]?.videoLink
                 : ""
             }
             responseLoading={loadingResponse}
@@ -249,8 +258,12 @@ export default function InterviewRecord({
               )}
               {responses && responses[selectedResponseIndex] && (
                 <div className="w-full mt-4">
-                  <h3 className="font-bold text-center underline mb-2">Example Response</h3>
-                  <p>{responses[selectedResponseIndex].exampleResponse}</p>
+                  <h3 className="font-bold text-center underline mb-2">
+                    Example Response
+                  </h3>
+                  <p>
+                    {responses[selectedResponseIndex]?.exampleResponse?.replace(/\\n/g, "\n")}
+                  </p>
                 </div>
               )}
             </>
