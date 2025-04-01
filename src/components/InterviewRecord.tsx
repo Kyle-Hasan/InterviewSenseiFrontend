@@ -235,8 +235,8 @@ export default function InterviewRecord({
                 <div className="w-full">
                   <h3 className="font-bold text-center underline mb-2">Good</h3>
                   <ul className="list-disc pl-5 space-y-1">
-                    {reviewGood.map((x) => (
-                      <li className="break-normal" key={x}>
+                    {reviewGood.map((x,index) => (
+                      <li className="break-normal" key={index}>
                         {x}
                       </li>
                     ))}
@@ -248,8 +248,8 @@ export default function InterviewRecord({
                 <div className="w-full mt-4">
                   <h3 className="font-bold text-center underline mb-2">Bad</h3>
                   <ul className="list-disc pl-5 space-y-1">
-                    {reviewBad.map((x) => (
-                      <li className="break-normal" key={x}>
+                    {reviewBad.map((x,index) => (
+                      <li className="break-normal" key={index}>
                         {x}
                       </li>
                     ))}

@@ -51,10 +51,11 @@ axiosInstance.interceptors.response.use(
         const refreshResponse = await axios.get(apiUrl + "/Auth/refreshToken", {
           withCredentials: true,
         });
+       
 
-        if (refreshResponse.data) {
-          return axiosInstance(originalRequest);
-        }
+       
+        return axiosInstance(originalRequest);
+        
       } catch (refreshError) {
         // Redirect to /login if refresh fails
         if (typeof window !== "undefined") {
