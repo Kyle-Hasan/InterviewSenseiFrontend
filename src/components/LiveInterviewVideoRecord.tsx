@@ -3,6 +3,10 @@ import { Button } from "./ui/button";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { send } from "process";
 import axiosInstance from "@/app/utils/axiosInstance";
+import { useMediaStream } from "@/app/hooks/useMediaStream";
+import { useMediaRecorder } from "@/app/hooks/useMediaRecorder";
+import { useAudioAnalyzer } from "@/app/hooks/useAudioAnalyzer";
+import { useVideoLink } from "@/app/hooks/useVideoLink";
 interface LiveInterviewVideoRecordProps {
   sendMessage: (blob: Blob | null) => void;
   endInterview: (blob: Blob) => void;
@@ -22,355 +26,138 @@ export default function LiveInterviewVideoRecord({
   interviewedStarted,
   interviewEnded,
   voiceMode,
-  onlyAudio,
+  onlyAudio = false
 }: LiveInterviewVideoRecordProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // this so that we can differientiate between the first recording and the subsequent ones
-  const [hasVideo, setHasVideo] = useState(false);
-
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const mediaStream = useRef<MediaStream | null>(null);
-
+  // Use our custom hooks
+  const { videoRef, hasVideo, setHasVideo, mediaStreamRef, startStream, stopStream } = 
+    useMediaStream(onlyAudio);
+  const { recording, startRecording, stopRecording } = useMediaRecorder();
+  const { circleRef, initializeAnalyzer, getAmplitudeRMS } = useAudioAnalyzer();
+  const { getVideoLink } = useVideoLink();
+  
+  // VAD hook from library
   const vad = useMicVAD({
     startOnLoad: false,
     redemptionFrames: 20,
     onFrameProcessed(probabilities, frame) {
       if (probabilities.isSpeech > 0.8) {
         const rms = getAmplitudeRMS();
-
+        
         if (circleRef.current) {
           const scale = Math.min(1 + rms * 100, 1.4);
           circleRef.current.style.transform = `scale(${scale})`;
         }
-        console.log("rms is ", rms);
-      } else {
-        if (circleRef.current) {
-          circleRef.current.style.transform = `scale(${1})`;
-        }
+      } else if (circleRef.current) {
+        circleRef.current.style.transform = `scale(1)`;
       }
     },
     onSpeechEnd: async (audio) => {
       const wavBuffer = utils.encodeWAV(audio);
-
-      const recordedBlob = convertDataToBlob([wavBuffer]);
-
+      const recordedBlob = new Blob([wavBuffer], { type: "audio/wav" });
       await sendMessage(recordedBlob);
-    },
+    }
   });
-
-  // State variables
-  const [recording, setRecording] = useState(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const silenceStartTimeRef = useRef<number | null>(null);
-  const lastCheckTime = useRef<number>(0);
-  const lastVolume = useRef<number>(0);
-  const lastSpokeTime = useRef<number>(0);
-  const circleRef = useRef<HTMLDivElement>(null);
-  // 5 minutes
-  const MAX_INTERVIEW_LENGTH = 5 * 60 * 1000;
-  const CHECK_INTERVAL = 200;
-  let SILENCE_THRESHOLD = 0.01;
-  const SILENCE_THRESHOLD_MULTIPLIER = 2.8;
-  const SILENCE_DURATION_TARGET = 800; // 800 ms
-  const timeoutId = useRef<NodeJS.Timeout | null>(null);
-
-  // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
-
-  const getVideoLink = async (videoLink: string): Promise<string> => {
-    debugger
-    if (process.env.NEXT_PUBLIC_SIGNED_URLS === "true" && videoLink) {
-      const response = await axiosInstance.get(videoLink);
-      if (response?.data) {
-        return response.data.result;
-      } else {
-        return "";
-      }
-    } else {
-      return Promise.resolve(videoLink);
-    }
-  };
-
-  useEffect(() => {
-    ;
-    if (interviewedStarted && !recording) {
-      startRecording();
-    }
-  }, [interviewedStarted]);
-
-  // clean up video stuff when you have voice recordings so that nothing bad happens if you turn voice mode on again
-  useEffect(() => {
-    if (!voiceMode) {
-      stopRecording();
-    } else if (voiceMode && interviewedStarted && !recording) {
-      startRecording();
-    }
-  }, [voiceMode]);
-
-  useEffect(() => {
-    ;
-    if (interviewEnded) {
-      stopRecording();
-    }
-  }, [interviewEnded]);
-
-  useEffect(() => {
-    setHasVideo(false);
-
-    const getVideo = async () => {
-      if (videoRef.current) {
-        videoRef.current.pause();
-
-        if (videoLink && videoLink.length > 0) {
-          debugger
-          // if we are using signed urls, get the link from the server to blob storage, otherwise just return the link(since that means the file is on the server)
-          videoRef.current.src = await getVideoLink(videoLink);
-          videoRef.current.load();
-          videoRef.current.currentTime = 0;
-          videoRef.current.muted = false;
-        } else if (!videoLink || videoLink.length === 0) {
-          setHasVideo(false);
-        }
-      }
-
-      return () => {
-        if (mediaRecorder.current) {
-          stopRecording();
-        }
-      };
-    };
-    getVideo();
-  }, [videoLink]);
-
-  const handleStream = async (stream: MediaStream) => {
-    mediaRecorder.current = new MediaRecorder(stream as MediaStream);
-
-    // uses events from mediaRecorder.current to function
-    if (mediaRecorder.current) {
-      const data: Blob[] = [];
-      mediaRecorder.current.start();
-
-      mediaRecorder.current.ondataavailable = (event) => data.push(event.data);
-
-      //  mediaRecorder.current.start();
-      // when the onstop event is fired, resolve, if theres an error reject.
-      const stopped = new Promise((resolve, reject) => {
-        if (mediaRecorder.current) {
-          mediaRecorder.current.onstop = resolve;
-          mediaRecorder.current.onerror = (event: ErrorEvent) => reject(event);
-        }
-      });
-
-      // force stop recording after maximum time as specified by timeout
-      timeoutId.current = setTimeout(() => {
-        if (
-          mediaRecorder.current &&
-          mediaRecorder.current.state === "recording"
-        ) {
-          stopRecording();
-        }
-      }, MAX_INTERVIEW_LENGTH);
-
-      // wait until its stopped
-      await stopped;
-      return data;
-    }
-    return null;
-  };
-
-  const convertDataToBlob = (data: Blob[] | ArrayBuffer[], audio = true) => {
-    return new Blob(data, { type: audio ? "audio/wav" : "video/webm" });
-  };
-
-  const startRecording = async () => {
+  
+  // Event handler for starting interview
+  const handleInterviewStart = async () => {
     if (setUnsavedVideo) {
       setUnsavedVideo(true);
     }
-    try {
-      setRecording(true);
-      setHasVideo(!onlyAudio);
-
-      let mediaConstraints = { video: !onlyAudio, audio: true };
-      let stream = null;
-      //first try with audio and video, if that fails, fall back to only audio, if that doesnt work just give up
-      try {
-        stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-      } catch (videoAudioError) {
-        console.warn("Video and audio not available, trying audio-only...");
-
-        try {
-          mediaConstraints = { video: false, audio: true };
-          stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-          setHasVideo(false);
-        } catch (audioError) {
-          console.error("No audio or video available:", audioError);
-          setRecording(false);
-          return;
-        }
-      }
-
-      mediaStream.current = stream;
-      vad.start();
-
-      if (videoRef.current && mediaStream.current) {
-        if (mediaConstraints.video) {
-          videoRef.current.srcObject = mediaStream.current;
-          videoRef.current.muted = true;
-          await videoRef.current.play();
-        }
-      }
-
-      // we switch to VAD for now, keep other code in case we cant use that library for some reason
-      // initializeSilenceDetection();
-      // for the animated speaking pulse, to make it change based on volume
-      initializeAudioAnalyzer();
-
-      // records until its stopped, afterwards process video propertly
-
-      const recordedChunks = await handleStream(mediaStream.current);
-      const recordedBlob = convertDataToBlob(recordedChunks ?? [], !hasVideo);
-      // make file for video
-      if (videoRef.current && recordedChunks) {
-        endInterview(recordedBlob);
-
+    
+    const stream = await startStream();
+    if (!stream) return;
+    
+    vad.start();
+    initializeAnalyzer(stream);
+    
+    startRecording(stream, (recordedBlob) => {
+      if (videoRef.current) {
         const url = URL.createObjectURL(recordedBlob);
-
         videoRef.current.src = url;
         videoRef.current.srcObject = null;
         videoRef.current.controls = true;
       }
       endInterview(recordedBlob);
-    } catch (error) {
-      console.error("Error during recording:", error);
-      setRecording(false);
-    }
-  };
-
-  const stopRecording = () => {
-    mediaStream.current?.getTracks().forEach((track) => track.stop());
-    mediaRecorder.current?.stop();
-    vad.pause();
-
-    console.log(mediaRecorder.current?.state);
-
-    if (timeoutId.current) {
-      clearTimeout(timeoutId.current);
-    }
-
-    setRecording(false);
-  };
-
-  const initializeAudioAnalyzer = () => {
-    const audioContext = new AudioContext();
-    audioContextRef.current = audioContext;
-    const source = audioContext.createMediaStreamSource(
-      mediaStream.current as MediaStream
-    );
-    const analyser = audioContext.createAnalyser();
-
-    analyser.fftSize = 1024; // Increased for better frequency analysis
-    source.connect(analyser);
-
-    analyserRef.current = analyser;
-  };
-
-  const initializeSilenceDetection = async () => {
-    const audioContext = new AudioContext();
-    audioContextRef.current = audioContext;
-    const source = audioContext.createMediaStreamSource(
-      mediaStream.current as MediaStream
-    );
-    const analyser = audioContext.createAnalyser();
-
-    analyser.fftSize = 1024; // Increased for better frequency analysis
-    source.connect(analyser);
-
-    analyserRef.current = analyser;
-    await preWarmMicrophone(300);
-    const avgBackgroundNoise = await calibrateForBackgroundNoise(500);
-    SILENCE_THRESHOLD = avgBackgroundNoise * SILENCE_THRESHOLD_MULTIPLIER; // Increase threshold multiplier
-
-    checkSilence();
-  };
-
-  const preWarmMicrophone = (duration = 300): Promise<void> => {
-    return new Promise((resolve) => setTimeout(resolve, duration));
-  };
-
-  const calibrateForBackgroundNoise = (duration = 300): Promise<number> => {
-    const startTime = performance.now();
-    const noiseSamples: number[] = [];
-
-    return new Promise((resolve) => {
-      const sampleNoise = () => {
-        noiseSamples.push(getAmplitudeRMS());
-        // remove first 3 to account for mic warming up(may need adjustments)
-
-        if (performance.now() - startTime < duration) {
-          requestAnimationFrame(sampleNoise);
-        } else {
-          // filter out initial 0's/ quietness, even if it really is just mostly 0, this wont effect the avg too much since its default 0
-          noiseSamples.splice(0, 3);
-
-          const noiseSampleAvg =
-            noiseSamples.reduce((sum, sample) => sum + sample, 0) /
-            noiseSamples.length;
-          resolve(noiseSampleAvg);
-        }
-      };
-
-      sampleNoise();
     });
   };
-
-  const getAmplitudeRMS = (): number => {
-    const amplitudeArr = new Float32Array(
-      analyserRef.current?.frequencyBinCount ?? 0
-    );
-    analyserRef.current?.getFloatTimeDomainData(amplitudeArr);
-
-    // Calculate raw RMS from frequency data (get)
-    const rawRMS =
-      amplitudeArr.reduce((sum, amp) => sum + amp, 0) / amplitudeArr.length;
-    return Math.abs(rawRMS) ?? 0;
+  
+  // Event handler for ending interview
+  const handleInterviewEnd = () => {
+    stopRecording();
+    stopStream();
+    vad.pause();
   };
-
-  const checkSilence = () => {
-    const now = performance.now();
-    if (now - lastCheckTime.current < CHECK_INTERVAL) {
-      requestAnimationFrame(checkSilence);
-      return;
-    }
-    lastCheckTime.current = now;
-
-    const avg = getAmplitudeRMS();
-
-    // **If volume suddenly drops 60% within 500ms, assume silence**
-    if (avg < lastVolume.current * 0.4 && now - lastSpokeTime.current < 500) {
-      lastSpokeTime.current = now - SILENCE_DURATION_TARGET; // Force earlier silence detection
-    }
-
-    if (avg < SILENCE_THRESHOLD) {
-      if (!silenceStartTimeRef.current) {
-        silenceStartTimeRef.current = Date.now();
-      }
-      if (Date.now() - silenceStartTimeRef.current >= SILENCE_DURATION_TARGET) {
-        silenceStartTimeRef.current = null;
+  
+  // Event handler for loading video
+  const handleLoadVideo = async () => {
+    if (!videoRef.current || !videoLink) return;
+    
+    videoRef.current.pause();
+    
+    if (videoLink.length > 0) {
+      try {
+        const url = await getVideoLink(videoLink);
+        videoRef.current.src = url;
+        videoRef.current.load();
+        videoRef.current.currentTime = 0;
+        videoRef.current.muted = false;
+      } catch (error) {
+        console.error("Error loading video:", error);
+        setHasVideo(false);
       }
     } else {
-      silenceStartTimeRef.current = null; // Reset if speaking
-      lastSpokeTime.current = now;
+      setHasVideo(false);
     }
-
-    setTimeout(checkSilence, CHECK_INTERVAL);
   };
-  // Mock function to handle starting a live interview session
-  // do this instead of not rendering at all in the parent to clean up video stuff properly when leaving voice mode
+
+
+  useEffect(() => {
+    if (interviewedStarted && !recording) {
+      handleInterviewStart();
+    }
+    
+    return () => {
+      if (recording) {
+        handleInterviewEnd();
+      }
+    };
+  }, [interviewedStarted]);
+  
+  useEffect(() => {
+    if (!voiceMode) {
+      handleInterviewEnd();
+    } else if (voiceMode && interviewedStarted && !recording) {
+      handleInterviewStart();
+    }
+    
+    return () => {
+      if (!voiceMode && recording) {
+        handleInterviewEnd();
+      }
+    };
+  }, [voiceMode]);
+  
+  useEffect(() => {
+    if (interviewEnded) {
+      handleInterviewEnd();
+    }
+  }, [interviewEnded]);
+  
+  useEffect(() => {
+    handleLoadVideo();
+    
+    return () => {
+      if (recording) {
+        handleInterviewEnd();
+      }
+    };
+  }, [videoLink]);
+  
+  // Don't render if voice mode is off
   if (!voiceMode) {
     return <></>;
   }
-
+  
   return (
     <div className="">
       <div className="">
@@ -387,9 +174,9 @@ export default function LiveInterviewVideoRecord({
             {/* expanding/contracting circle */}
             <div
               ref={circleRef}
-              className="absolute w-16 h-16 border-2 border-green-500 rounded-full transition-transform duration-10 "
+              className="absolute w-16 h-16 border-2 border-green-500 rounded-full transition-transform duration-10"
             ></div>
-            {/* microphone icon from https://heroicons.com/ */}
+            {/* microphone icon */}
             <div className="relative z-10">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
